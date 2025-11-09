@@ -19,7 +19,7 @@ pub struct MemFont(pub HANDLE);
 /**
 Represent a font parameters. Returned by the font dialog when the user selected a font.
 Can also be used to create a Font resource using `Font::from_info`
-For more information on the parameters see: https://docs.microsoft.com/en-us/windows/win32/api/wingdi/ns-wingdi-logfonta
+For more information on the parameters see: <https://docs.microsoft.com/en-us/windows/win32/api/wingdi/ns-wingdi-logfonta>
 */
 #[derive(Debug, Clone)]
 pub struct FontInfo {

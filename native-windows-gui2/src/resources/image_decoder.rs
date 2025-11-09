@@ -49,7 +49,7 @@ impl ImageDecoder {
 
     /**
         Try to read an image from a file path.
-        The file type can be any of the native WIC codecs (https://docs.microsoft.com/en-us/windows/win32/wic/native-wic-codecs)
+        The file type can be any of the native WIC codecs (<https://docs.microsoft.com/en-us/windows/win32/wic/native-wic-codecs>)
 
         * If there is an error during the decoding, returns a NwgError.
         * If the image decoder was not initialized, this method panics
@@ -68,7 +68,7 @@ impl ImageDecoder {
 
     /**
         Build an image from a stream of data.
-        The file type can be any of the native WIC codecs (https://docs.microsoft.com/en-us/windows/win32/wic/native-wic-codecs)
+        The file type can be any of the native WIC codecs (<https://docs.microsoft.com/en-us/windows/win32/wic/native-wic-codecs>)
 
         * If there is an error during the decoding, returns a NwgError.
         * If the image decoder was not initialized, this method panics
@@ -222,7 +222,7 @@ impl ImageData {
         Copy a region of the frames pixel into a buffer.
 
         Parameters:
-            offset: The [x,y] offset at which the region begins
+            offset: The \[x,y\] offset at which the region begins
             size: The [width, height] size of the region
             pixel_size: defines the size of a pixel in bytes. In a typical RGBA image, this would be 4 (1 byte for each component).
                         If unsure, use the pixel_format.

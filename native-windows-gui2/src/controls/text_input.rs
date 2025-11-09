@@ -43,7 +43,7 @@ bitflags! {
 /**
 An edit control is a rectangular control window to permit the user to enter and edit text by typing on the keyboard
 This control only allow a single line input. For block of text, use `TextBox`.
-Winapi documentation: https://docs.microsoft.com/en-us/windows/win32/controls/about-edit-controls#text-and-input-styles
+Winapi documentation: <https://docs.microsoft.com/en-us/windows/win32/controls/about-edit-controls#text-and-input-styles>
 
 TextInput is not behind any features.
 

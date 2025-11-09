@@ -25,64 +25,64 @@ bitflags! {
     }
 }
 
-/**
-    A control that handle system tray notification.
-    A TrayNotification wraps a single icon in the Windows system tray.
+///
+/// A control that handle system tray notification.
+/// A TrayNotification wraps a single icon in the Windows system tray.
+///
+/// An application can have many TrayNotification, but each window (aka parent) can only have a single traynotification.
+/// It is possible to create system tray only application with the `MessageOnlyWindow` control.
+///
+/// A system tray will receive events if `callback` is set to true in the builder (the default behaviour).
+/// The control will generate mouse events such as `OnMouseMove` when the user interact with the tray icon or the message popup.
+/// A system tray will also receive a `OnContextMenu` when the user right click the icon. It is highly recommended handle this message and display a popup menu
+///
+/// You can't get information on the state of a tray notification (such as visibility) because Windows don't want you to.
+///
+/// **Builder parameters:**
+///
+/// * `parent`:       **Required.** The tray notification parent container.
+/// * `icon`:         **Required.** The icon to display in the system tray
+/// * `tips`:         Display a simple tooltip when hovering the icon in the system tray
+/// * `flags`:        A combination of the TrayNotificationFlags values.
+/// * `visible`:      If the icon should be visible in the system tray
+/// * `realtime`:     If the balloon notification cannot be displayed immediately, discard it.
+/// * `info`:         Display a fancy tooltip when the system tray icon is hovered (replaces tip)
+/// * `balloon_icon`: The icon to display in the fancy tooltip
+/// * `info_title`:   The title of the fancy tooltip
+///
+/// **Control events:**
+///
+/// * `OnContextMenu`: When the user right clicks on the system tray icon
+/// * `MousePressLeftUp`: When the user left click the system tray icon
+/// * `OnTrayNotificationShow`: When a TrayNotification info popup (not the tooltip) is shown
+/// * `OnTrayNotificationHide`: When a TrayNotification info popup (not the tooltip) is hidden
+/// * `OnTrayNotificationTimeout`: When a TrayNotification is closed due to a timeout
+/// * `OnTrayNotificationUserClose`: When a TrayNotification is closed due to a user click
+///
+/// ## Example
+///
+/// ```rust
+/// use native_windows_gui2 as nwg;
+///
+/// fn notice_user(tray: &nwg::TrayNotification, image: &nwg::Icon) {
+///     let flags = nwg::TrayNotificationFlags::USER_ICON | nwg::TrayNotificationFlags::LARGE_ICON;
+///     tray.show("Hello World", Some("Welcome to my application"), Some(flags), Some(image));
+/// }
+/// ```
+///
+/// ```rust
+/// use native_windows_gui2 as nwg;
+/// fn build_tray(tray: &mut nwg::TrayNotification, window: &nwg::Window, icon: &nwg::Icon) {
+///     nwg::TrayNotification::builder()
+///         .parent(window)
+///         .icon(Some(icon))
+///         .tip(Some("Hello"))
+///         .build(tray);
+/// }
+/// ```
+///
+/// Winapi docs: <https://docs.microsoft.com/en-us/windows/win32/shell/notification-area>
 
-    An application can have many TrayNotification, but each window (aka parent) can only have a single traynotification.
-    It is possible to create system tray only application with the `MessageOnlyWindow` control.
-
-    A system tray will receive events if `callback` is set to true in the builder (the default behaviour).
-    The control will generate mouse events such as `OnMouseMove` when the user interact with the tray icon or the message popup.
-    A system tray will also receive a `OnContextMenu` when the user right click the icon. It is highly recommended handle this message and display a popup menu
-
-    You can't get information on the state of a tray notification (such as visibility) because Windows don't want you to.
-
-    **Builder parameters:**
-
-        * `parent`:       **Required.** The tray notification parent container.
-        * `icon`:         **Required.** The icon to display in the system tray
-        * `tips`:         Display a simple tooltip when hovering the icon in the system tray
-        * `flags`:        A combination of the TrayNotificationFlags values.
-        * `visible`:      If the icon should be visible in the system tray
-        * `realtime`:     If the balloon notification cannot be displayed immediately, discard it.
-        * `info`:         Display a fancy tooltip when the system tray icon is hovered (replaces tip)
-        * `balloon_icon`: The icon to display in the fancy tooltip
-        * `info_title`:   The title of the fancy tooltip
-
-    **Control events:**
-
-        * `OnContextMenu`: When the user right clicks on the system tray icon
-        * `MousePressLeftUp`: When the user left click the system tray icon
-        * `OnTrayNotificationShow`: When a TrayNotification info popup (not the tooltip) is shown
-        * `OnTrayNotificationHide`: When a TrayNotification info popup (not the tooltip) is hidden
-        * `OnTrayNotificationTimeout`: When a TrayNotification is closed due to a timeout
-        * `OnTrayNotificationUserClose`: When a TrayNotification is closed due to a user click
-
-    ## Example
-
-    ```rust
-    use native_windows_gui2 as nwg;
-
-    fn notice_user(tray: &nwg::TrayNotification, image: &nwg::Icon) {
-        let flags = nwg::TrayNotificationFlags::USER_ICON | nwg::TrayNotificationFlags::LARGE_ICON;
-        tray.show("Hello World", Some("Welcome to my application"), Some(flags), Some(image));
-    }
-    ```
-
-    ```rust
-    use native_windows_gui2 as nwg;
-    fn build_tray(tray: &mut nwg::TrayNotification, window: &nwg::Window, icon: &nwg::Icon) {
-        nwg::TrayNotification::builder()
-            .parent(window)
-            .icon(Some(icon))
-            .tip(Some("Hello"))
-            .build(tray);
-    }
-    ```
-
-    Winapi docs: https://docs.microsoft.com/en-us/windows/win32/shell/notification-area
-*/
 #[derive(Default, PartialEq, Eq)]
 pub struct TrayNotification {
     pub handle: ControlHandle,

@@ -16,7 +16,7 @@ use winapi::um::winuser::{
     EnumWindows, GetPropW, IsWindow, SW_NORMAL, SetForegroundWindow, SetPropW, ShowWindow,
 };
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 #[used]
 pub static mut G_H_VALUE: HANDLE = 1 as HANDLE;
 

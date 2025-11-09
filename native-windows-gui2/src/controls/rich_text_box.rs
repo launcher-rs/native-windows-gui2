@@ -232,7 +232,7 @@ The rich text box control supports the following rich text features:
 * Custom line spacing
 
 
-See: https://docs.microsoft.com/en-us/windows/win32/controls/about-rich-edit-controls#rich-edit-version-41
+See: <https://docs.microsoft.com/en-us/windows/win32/controls/about-rich-edit-controls#rich-edit-version-41>
 
 Note: Use `\r\n` to input a new line not just `\n`.
 

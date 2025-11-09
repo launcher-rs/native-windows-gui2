@@ -25,7 +25,7 @@ To register a custom struct as a NWG control with full support you need to imple
   * Deref
   * DerefMut
   * Into<nwg::ControlHandle>
-  * PartialEq<SubclassControl> for nwg::ControlHandle
+  * `PartialEq<SubclassControl>` for nwg::ControlHandle
 
 You can either to it manually or the `subclass_control!(type, base_type, field)` macro.
 */

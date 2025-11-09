@@ -2,7 +2,7 @@
     A very simple application that show your name in a message box.
     Use a manifest file to load control style and requires admin priviledge to start.
 
-    For more info about resources see https://docs.microsoft.com/en-us/windows/win32/menurc/resource-definition-statements
+    For more info about resources see <https://docs.microsoft.com/en-us/windows/win32/menurc/resource-definition-statements>
 */
 
 extern crate native_windows_derive2 as nwd;
