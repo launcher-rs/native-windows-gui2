@@ -1,3 +1,15 @@
+# Native Windows GUI2
+
+
+## 基于 [native-windows-gui](https://github.com/gabdube/native-windows-gui) 进行修改
+
+### 合并pr
+* 305: Add dark mode support  添加暗黑模式支持
+* 306: Add blocking dispatch_thread_events function #306 添加阻塞的 dispatch_thread_events 函数
+* 307: Add SMOOTH, SMOOTHREVERSE style to progress bar 为进度条添加 SMOOTH、SMOOTHREVERSE 样式
+* 308: Replace transmuted references with explicit pointer type casts 用显式指针类型转换替换转换后的引用,[解决tab release报错]
+* 309: 手动修改的
+
 # Native Windows GUI
 
 Welcome to Native Windows GUI (aka NWG). A rust library to develop native GUI applications on the desktop for Microsoft Windows.
@@ -28,8 +40,8 @@ To use NWG in your project add it to cargo.toml:
 
 ```toml
 [dependencies]
-native-windows-gui = "1.0.12"
-native-windows-derive = "1.0.3" # Optional. Only if the derive macro is used.
+native-windows-gui2 = "0.1.0"
+native-windows-derive2 = "0.1.0" # Optional. Only if the derive macro is used.
 ```
 
 And then, in main.rs or lib.rs :
@@ -39,15 +51,7 @@ extern crate native_windows_gui2 as nwg;
 extern crate native_windows_derive2 as nwd;  // Optional. Only if the derive macro is used.
 ```
 
-### Rust 2018 aliasing
 
-You can skip the `extern crate` define in your source code by adding the following code in `Cargo.toml`
-Note that procedural macros still require an `extern crate` definition, so this wont work with `native-windows-derive`
-
-```toml
-[dependencies]
-nwg = {version = "^1.0.12", package = "native-windows-gui"}
-```
 
 
 ## Trying it out
@@ -55,9 +59,9 @@ nwg = {version = "^1.0.12", package = "native-windows-gui"}
 See it for yourself. NWG has plenty of examples and a fully interactive test suite. The only thing you need to do is:
 
 ```bash
-git clone git@github.com:gabdube/native-windows-gui.git
+git clone https://github.com/launcher-rs/native-windows-gui2.git
 
-cd native-windows-gui/native-windows-gui # Running the tests from the workspace screws up the features
+cd native-windows-gui2/native-windows-gui2 # Running the tests from the workspace screws up the features
 
 cargo test everything --features "all"  # For the test suite
 cargo run --example basic

@@ -65,9 +65,9 @@ nwg = {version = "^1.0.12", package = "native-windows-gui"}
 See it for yourself. NWG has plenty of examples and a fully interactive test suite. The only thing you need to do is:
 
 ```bash
-git clone git@github.com:gabdube/native-windows-gui.git
+git clone https://github.com/launcher-rs/native-windows-gui2.git
 
-cd native-windows-gui/native-windows-gui # Running the tests from the workspace screws up the features
+cd native-windows-gui2/native-windows-gui2 # Running the tests from the workspace screws up the features
 
 cargo test everything --features "all"  # For the test suite
 cargo run --example basic
