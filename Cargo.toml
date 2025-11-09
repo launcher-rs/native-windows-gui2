@@ -1,0 +1,32 @@
+[workspace]
+resolver = "3"
+
+members = [
+    "native-windows-gui2",
+    "native-windows-derive2",
+    "native-windows-canvas2",
+    "native-windows-gui2/examples/opengl_canvas",
+    "native-windows-gui2/examples/embed_resources",
+    "native-windows-gui2/examples/sync-draw",
+    "native-windows-gui2/examples/wgpu_canvas",
+    "native-windows-gui2/examples/hdpi_plotting",
+
+    "native-windows-gui2/examples/listview-demo",
+    "native-windows-gui2/examples/load-config",
+    "native-windows-gui2/examples/message-box-example",
+    "native-windows-gui2/examples/panic_capture",
+    "native-windows-gui2/examples/select_demo",
+    "native-windows-gui2/examples/singleprocess",
+    "native-windows-gui2/examples/singleprocess2",
+    "native-windows-gui2/examples/tabs",
+    "native-windows-gui2/examples/tabs-gridlayout",
+    "native-windows-gui2/examples/tabs-partial",
+    "native-windows-gui2/examples/timer",
+    "native-windows-gui2/examples/tray_demo",
+]
+
+[profile.dev]
+panic = 'abort'
+
+[profile.release]
+panic = 'abort'

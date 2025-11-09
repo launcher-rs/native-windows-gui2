@@ -1,0 +1,14 @@
+[package]
+name = "nwg-hdpi-plotting"
+version = "1.0.0"
+authors = ["launcher-rs"]
+edition = "2024"
+build = "build.rs"
+
+[dependencies]
+plotters = { version = "0.3", default-features=false, features=["all_series", "all_elements"] }
+native-windows-gui2 = {path = "../../", features=["high-dpi"]}
+native-windows-derive2 = {path = "../../../native-windows-derive2"}
+
+[build-dependencies]
+embed-resource = "1.3"

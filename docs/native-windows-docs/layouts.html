@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <title>Native Windows GUI guide - Layout</title>
+
+    <link rel="stylesheet" type="text/css" href="style/rustbook.css">
+    <link rel="stylesheet" type="text/css" href="style/pygments.css">
+    <link rel="stylesheet" type="text/css" href="style/nwg.css">
+</head>
+<body class="rustdoc">
+<!--[if lte IE 8]>
+<div class="warning">
+    This old browser is unsupported and will most likely display funky
+    things.
+</div>
+<![endif]-->
+
+<!-- NAV BEGIN -->
+<div id="nav">
+    <button id="toggle-nav">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+    </button>
+</div>
+
+    
+<div id='toc' class='mobile-hidden'>
+<ul class='chapter'>
+<li><a href='index.html'><b>1.</b> Introduction</a>
+</li>
+<li><a href='getting_started.html'><b>2.</b> Getting Started</a>
+</li>
+
+<li><a href="basics.html"><b>3.</b> Basics </a>
+<ul class="section">
+    <li><a href="controls.html"><b>3.1.</b> Controls </a></li>
+    <li><a href="events.html"><b>3.2.</b> Events </a></li>
+    <li><a href="helper.html"><b>3.3.</b> Helpers </a></li>
+    <li><a href="small.html"><b>3.4.</b> Small application layout </a></li>
+    <li><a href="limitations.html"><b>3.5.</b> Limitations </a></li>
+    <li><a href="distribute.html"><b>3.6.</b> Distributing </a></li>
+    <li><a href="features.html"><b>3.7.</b> Features </a></li>
+</ul>
+</li>
+
+<li><a href="intermediate.html"><b>4.</b> Intermediate </a>
+<ul class="section">
+    <li><a href="layouts.html"><b>4.1.</b> Layouts </a></li>
+    <li><a href="resources.html"><b>4.2.</b> Resources </a></li>
+    <li><a href="dialogs.html"><b>4.3.</b> Dialogs </a></li>
+    <li><a href="localization.html"><b>4.4.</b> Internationalization </a></li>
+</ul>
+</li>
+
+<li><a href="advanced.html"><b>5.</b> Advanced </a>
+<ul class="section">
+    <li><a href="partial.html"><b>5.1.</b> Partials ui </a></li>
+    <li><a href="dynamic_control.html"><b>5.2.</b> Dynamic control </a></li>
+    <li><a href="dynamic_event.html"><b>5.3.</b> Dynamic events </a></li>
+    <li><a href="multithreading.html"><b>5.4.</b> Multithreading </a></li>
+</ul>
+</li>
+
+<li><a href="derive.html"><b>6.</b> Native-windows-derive </a>
+<ul class="section">
+    <li><a href="nwd_basics.html"><b>6.1.</b> Basics </a></li>
+    <li><a href="nwd_controls.html"><b>6.1.</b> Controls </a></li>
+    <li><a href="nwd_resources.html"><b>6.2.</b> Resources </a></li>
+    <li><a href="nwd_events.html"><b>6.3.</b> Events </a></li>
+    <li><a href="nwd_layouts.html"><b>6.4.</b> Layouts </a></li>
+    <li><a href="nwd_partial.html"><b>6.5.</b> Partials </a></li>
+</ul>
+</li>
+
+<li><a href="low.html"><b>7.</b> Low level stuff </a>
+    <ul class="section">
+        <li><a href="low_events.html"><b>7.1.</b> Raw event handling </a></li>
+        <li><a href="extern_wrapping.html"><b>7.2.</b> Raw control handle </a></li>
+    </ul>
+</li>
+
+</ul>
+</div>
+<!-- NAV END -->
+
+<div id='page-wrapper'>
+    <div id='page'>
+
+
+<h1 class="title">Native Windows GUI: Layouts</h1>
+A layout resizes and moves the children controls of a Window control<br><br>
+Native windows GUI includes 2 type of layouts: BoxLayout and GridLayout.<br>
+
+<ul>
+    <li>A FlexboxLayout lays out widgets in vertical line or horizontal line</li>
+    <li>A GridLayout lays out widgets in a grid</li>
+</ul>
+
+To learn how to use layouts with <code>native-windows-derive</code> see <a href="nwd_layouts.html">the derive section</a>
+<br><br>
+
+<h3>Basic usage</h3>  
+
+Just like most NWG objects, layouts are created using a builder api. A layout uses 1 parent control and 0 or more children control. For children or for the parent,
+the layout only accepts window-like controls (<b>valid</b>: buttons, edit, etc. <b>not valid</b>: menu, timer, notice, etc).<br><br>  
+
+Layouts implement default. A default layout must first be initialized with a builder. Trying to call methods on default builders will cause a panic.<br><br>
+
+Layouts resize their children automatically when the parent control is resized. This also triggers a <code>OnResize</code> event.<br><br>
+
+<b>GridLayout</b> and <b>flexbox</b> have a similar builder API. With some exceptions when defining children. <br><br>
+
+Layouts uses interior mutability, as such it's always possible to edit their properties or their children <br><br>
+
+<h3>Gridlayout</h3>  
+
+The GridLayout splits the parent control into an equally spaced grid. Children are placed in that grid using a [row, column] index.
+Optionally, children controls can span across more than one row/column.<br><br>
+
+Children in a gridlayout can be added using the <code>child</code> method or the <code>child_item</code> method. The first one is a simpler interface when the
+children control do not span across multiple cells. <code>child_item</code> is used to specify the row span and the column span of the children.<br><br>
+
+A gridlayout can be manually resized with the <code>resize</code> method. Also, if one of the layout properties was updates, the <code>fit</code> method can be used
+to show the change and refit the children in the parent.<br><br>
+
+Lastly, check out the grid layout docs for the layout properties.<br><br>
+
+A grid layout example:
+
+<div class="highlight"><pre style="width: auto"><span></span><span class="kd">let</span><span class="w"> </span><span class="n">grid</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">nwg</span>::<span class="n">GridLayout</span>::<span class="n">default</span><span class="p">();</span><span class="w"></span>
+<span class="kd">let</span><span class="w"> </span><span class="n">window</span>: <span class="kp">&amp;</span><span class="nc">nwg</span>::<span class="n">Window</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="cm">/*...*/</span><span class="p">;</span><span class="w"></span>
+<span class="kd">let</span><span class="w"> </span><span class="n">item1</span>: <span class="kp">&amp;</span><span class="nc">nwg</span>::<span class="n">Button</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="cm">/*...*/</span><span class="p">;</span><span class="w"></span>
+<span class="kd">let</span><span class="w"> </span><span class="n">item2</span>: <span class="kp">&amp;</span><span class="nc">nwg</span>::<span class="n">Label</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="cm">/*...*/</span><span class="p">;</span><span class="w"></span>
+
+<span class="n">nwg</span>::<span class="n">GridLayout</span>::<span class="n">builder</span><span class="p">()</span><span class="w"></span>
+<span class="w">    </span><span class="p">.</span><span class="n">parent</span><span class="p">(</span><span class="o">&amp;</span><span class="n">window</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="p">.</span><span class="n">max_row</span><span class="p">(</span><span class="nb">Some</span><span class="p">(</span><span class="mi">6</span><span class="p">))</span><span class="w"></span>
+<span class="w">    </span><span class="p">.</span><span class="n">spacing</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="p">.</span><span class="n">margin</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span><span class="w"></span>
+<span class="w">    </span><span class="p">.</span><span class="n">child</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">item1</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="p">.</span><span class="n">child_item</span><span class="p">(</span><span class="n">nwg</span>::<span class="n">GridLayoutItem</span>::<span class="n">new</span><span class="p">(</span><span class="o">&amp;</span><span class="n">item2</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">))</span><span class="w"></span>
+<span class="w">    </span><span class="p">.</span><span class="n">build</span><span class="p">(</span><span class="o">&amp;</span><span class="n">grid</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+
+<br><br>
+
+<h3>FlexboxLayout</h3>  
+
+Flexbox layout uses <a href="https://github.com/vislyhq/stretch">stretch</a> to align children controls in a row or in column. <br><br>
+
+Internally, nwg controls (both the parent and the children) are associated with a stretch node/style. See the flexbox layout docs for the style methods.<br><br>
+
+At building time, a new children can be added to the layout using the <code>child</code> method. Following this method, any <code>child_*</code> method call will
+customize the style of this child. Another call to <code>child</code> will finalize the current child style<br><br>
+
+A flexbox layout example:
+
+<div class="highlight"><pre style="width: auto"><span></span><span class="k">use</span><span class="w"> </span><span class="n">native_windows_gui</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">nwg</span><span class="p">;</span><span class="w"></span>
+
+<span class="c1">// native_windows_gui exports stretch</span>
+<span class="k">use</span><span class="w"> </span><span class="n">nwg</span>::<span class="n">stretch</span>::<span class="p">{</span><span class="n">geometry</span>::<span class="p">{</span><span class="n">Size</span><span class="p">,</span><span class="w"> </span><span class="n">Rect</span><span class="p">},</span><span class="w"> </span><span class="n">style</span>::<span class="p">{</span><span class="n">Dimension</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">D</span><span class="p">,</span><span class="w"> </span><span class="n">FlexDirection</span><span class="p">}};</span><span class="w"></span>
+
+<span class="k">const</span><span class="w"> </span><span class="n">FIFTY_PC</span>: <span class="nc">D</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">D</span>::<span class="n">Percent</span><span class="p">(</span><span class="mf">0.5</span><span class="p">);</span><span class="w"></span>
+<span class="k">const</span><span class="w"> </span><span class="n">PT_10</span>: <span class="nc">D</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">D</span>::<span class="n">Points</span><span class="p">(</span><span class="mf">10.0</span><span class="p">);</span><span class="w"></span>
+<span class="k">const</span><span class="w"> </span><span class="n">PT_5</span>: <span class="nc">D</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">D</span>::<span class="n">Points</span><span class="p">(</span><span class="mf">5.0</span><span class="p">);</span><span class="w"></span>
+<span class="k">const</span><span class="w"> </span><span class="n">PADDING</span>: <span class="nc">Rect</span><span class="o">&lt;</span><span class="n">D</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Rect</span><span class="p">{</span><span class="w"> </span><span class="n">start</span>: <span class="nc">PT_10</span><span class="p">,</span><span class="w"> </span><span class="n">end</span>: <span class="nc">PT_10</span><span class="p">,</span><span class="w"> </span><span class="n">top</span>: <span class="nc">PT_10</span><span class="p">,</span><span class="w"> </span><span class="n">bottom</span>: <span class="nc">PT_10</span><span class="w"> </span><span class="p">};</span><span class="w"></span>
+<span class="k">const</span><span class="w"> </span><span class="n">MARGIN</span>: <span class="nc">Rect</span><span class="o">&lt;</span><span class="n">D</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Rect</span><span class="p">{</span><span class="w"> </span><span class="n">start</span>: <span class="nc">PT_5</span><span class="p">,</span><span class="w"> </span><span class="n">end</span>: <span class="nc">PT_5</span><span class="p">,</span><span class="w"> </span><span class="n">top</span>: <span class="nc">PT_5</span><span class="p">,</span><span class="w"> </span><span class="n">bottom</span>: <span class="nc">PT_5</span><span class="w"> </span><span class="p">};</span><span class="w"></span>
+
+<span class="k">fn</span> <span class="nf">build_layout</span><span class="p">(</span><span class="n">window</span>: <span class="kp">&amp;</span><span class="nc">nwg</span>::<span class="n">Window</span><span class="p">,</span><span class="w"> </span><span class="n">item1</span>: <span class="kp">&amp;</span><span class="nc">nwg</span>::<span class="n">Button</span><span class="p">,</span><span class="w"> </span><span class="n">item2</span>: <span class="kp">&amp;</span><span class="nc">nwg</span>::<span class="n">Button</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">layout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">nwg</span>::<span class="n">FlexboxLayout</span>::<span class="n">default</span><span class="p">();</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">nwg</span>::<span class="n">FlexboxLayout</span>::<span class="n">builder</span><span class="p">()</span><span class="w"></span>
+<span class="w">        </span><span class="p">.</span><span class="n">parent</span><span class="p">(</span><span class="o">&amp;</span><span class="n">window</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="p">.</span><span class="n">flex_direction</span><span class="p">(</span><span class="n">FlexDirection</span>::<span class="n">Row</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="p">.</span><span class="n">padding</span><span class="p">(</span><span class="n">PADDING</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="p">.</span><span class="n">child</span><span class="p">(</span><span class="n">item1</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="p">.</span><span class="n">child_margin</span><span class="p">(</span><span class="n">MARGIN</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="p">.</span><span class="n">child_max_size</span><span class="p">(</span><span class="n">Size</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">width</span>: <span class="nc">D</span>::<span class="n">Points</span><span class="p">(</span><span class="mf">200.0</span><span class="p">),</span><span class="w"> </span><span class="n">height</span>: <span class="nc">D</span>::<span class="n">Undefined</span><span class="w"> </span><span class="p">})</span><span class="w"></span>
+<span class="w">            </span><span class="p">.</span><span class="n">child_size</span><span class="p">(</span><span class="n">Size</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">width</span>: <span class="nc">FIFTY_PC</span><span class="p">,</span><span class="w"> </span><span class="n">height</span>: <span class="nc">D</span>::<span class="n">Auto</span><span class="w"> </span><span class="p">})</span><span class="w"></span>
+<span class="w">        </span><span class="p">.</span><span class="n">child</span><span class="p">(</span><span class="n">item2</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="p">.</span><span class="n">child_margin</span><span class="p">(</span><span class="n">MARGIN</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="p">.</span><span class="n">child_size</span><span class="p">(</span><span class="n">Size</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">width</span>: <span class="nc">D</span>::<span class="n">Percent</span><span class="p">(</span><span class="mf">0.25</span><span class="p">),</span><span class="w"> </span><span class="n">height</span>: <span class="nc">FIFTY_PC</span><span class="w"> </span><span class="p">})</span><span class="w"></span>
+<span class="w">        </span><span class="p">.</span><span class="n">build</span><span class="p">(</span><span class="o">&amp;</span><span class="n">layout</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">layout</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+<br>    
+
+Flexbox with sub layouts:
+
+<pre style="line-height: 125%;"><span></span><span style="color: #008000; font-weight: bold">use</span><span style="color: #bbbbbb"> </span>native_windows_gui<span style="color: #bbbbbb"> </span><span style="color: #008000; font-weight: bold">as</span><span style="color: #bbbbbb"> </span>nwg;<span style="color: #bbbbbb"></span>
+
+<span style="color: #408080; font-style: italic">// native_windows_gui exports stretch</span>
+<span style="color: #008000; font-weight: bold">use</span><span style="color: #bbbbbb"> </span>nwg::stretch::{<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">    </span>geometry::Size,<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">    </span>style::{Dimension<span style="color: #bbbbbb"> </span><span style="color: #008000; font-weight: bold">as</span><span style="color: #bbbbbb"> </span>D,<span style="color: #bbbbbb"> </span>FlexDirection,<span style="color: #bbbbbb"> </span>JustifyContent},<span style="color: #bbbbbb"></span>
+};<span style="color: #bbbbbb"></span>
+
+<span style="color: #008000; font-weight: bold">const</span><span style="color: #bbbbbb"> </span>PC_50: <span style="color: #0000FF; font-weight: bold">D</span><span style="color: #bbbbbb"> </span><span style="color: #666666">=</span><span style="color: #bbbbbb"> </span>D::Percent(<span style="color: #666666">0.5</span>);<span style="color: #bbbbbb"></span>
+<span style="color: #008000; font-weight: bold">const</span><span style="color: #bbbbbb"> </span>PT_50: <span style="color: #0000FF; font-weight: bold">D</span><span style="color: #bbbbbb"> </span><span style="color: #666666">=</span><span style="color: #bbbbbb"> </span>D::Points(<span style="color: #666666">50.0</span>);<span style="color: #bbbbbb"></span>
+
+<span style="color: #008000; font-weight: bold">fn</span> <span style="color: #0000FF">build_complex_layout</span>(<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">    </span>window: <span style="color: #008000">&amp;</span><span style="color: #0000FF; font-weight: bold">nwg</span>::Window,<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">    </span>label_a: <span style="color: #008000">&amp;</span><span style="color: #0000FF; font-weight: bold">nwg</span>::Label,<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">    </span>label_b: <span style="color: #008000">&amp;</span><span style="color: #0000FF; font-weight: bold">nwg</span>::Label,<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">    </span>textbox_a: <span style="color: #008000">&amp;</span><span style="color: #0000FF; font-weight: bold">nwg</span>::TextBox,<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">    </span>box_a: <span style="color: #008000">&amp;</span><span style="color: #0000FF; font-weight: bold">nwg</span>::Button,<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">    </span>box_b: <span style="color: #008000">&amp;</span><span style="color: #0000FF; font-weight: bold">nwg</span>::Button,<span style="color: #bbbbbb"></span>
+)<span style="color: #bbbbbb"> </span>{<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">    </span><span style="color: #008000; font-weight: bold">let</span><span style="color: #bbbbbb"> </span>top_layout<span style="color: #bbbbbb"> </span><span style="color: #666666">=</span><span style="color: #bbbbbb"> </span><span style="color: #008000">Default</span>::default();<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">    </span><span style="color: #008000; font-weight: bold">let</span><span style="color: #bbbbbb"> </span>middle_layout<span style="color: #bbbbbb"> </span><span style="color: #666666">=</span><span style="color: #bbbbbb"> </span><span style="color: #008000">Default</span>::default();<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">    </span><span style="color: #008000; font-weight: bold">let</span><span style="color: #bbbbbb"> </span>bottom_layout<span style="color: #bbbbbb"> </span><span style="color: #666666">=</span><span style="color: #bbbbbb"> </span><span style="color: #008000">Default</span>::default();<span style="color: #bbbbbb"></span>
+
+<span style="color: #bbbbbb">    </span><span style="color: #008000; font-weight: bold">let</span><span style="color: #bbbbbb"> </span>full_layout<span style="color: #bbbbbb"> </span><span style="color: #666666">=</span><span style="color: #bbbbbb"> </span><span style="color: #008000">Default</span>::default();<span style="color: #bbbbbb"></span>
+
+<span style="color: #bbbbbb">    </span>nwg::FlexboxLayout::builder()<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">        </span>.parent(window)<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">        </span>.flex_direction(FlexDirection::Column)<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">        </span>.justify_content(JustifyContent::Center)<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">        </span>.child(label_a)<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">            </span>.child_size(Size<span style="color: #bbbbbb"> </span>{<span style="color: #bbbbbb"> </span>width: <span style="color: #0000FF; font-weight: bold">PC_50</span>,<span style="color: #bbbbbb"> </span>height: <span style="color: #0000FF; font-weight: bold">PT_50</span><span style="color: #bbbbbb"> </span>})<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">        </span>.child(textbox_a)<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">            </span>.child_flex_grow(<span style="color: #666666">1.0</span>)<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">        </span>.build_partial(<span style="color: #666666">&amp;</span>top_layout)<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">        </span>.unwrap();<span style="color: #bbbbbb"></span>
+
+<span style="color: #bbbbbb">    </span>nwg::FlexboxLayout::builder()<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">        </span>.parent(window)<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">        </span>.flex_direction(FlexDirection::Row)<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">        </span>.child(box_a)<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">            </span>.child_size(Size<span style="color: #bbbbbb"> </span>{<span style="color: #bbbbbb"> </span>width: <span style="color: #0000FF; font-weight: bold">PT_50</span>,<span style="color: #bbbbbb"> </span>height: <span style="color: #0000FF; font-weight: bold">PT_50</span><span style="color: #bbbbbb"> </span>})<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">        </span>.child(box_b)<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">            </span>.child_size(Size<span style="color: #bbbbbb"> </span>{<span style="color: #bbbbbb"> </span>width: <span style="color: #0000FF; font-weight: bold">PT_50</span>,<span style="color: #bbbbbb"> </span>height: <span style="color: #0000FF; font-weight: bold">PT_50</span><span style="color: #bbbbbb"> </span>})<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">        </span>.build_partial(<span style="color: #666666">&amp;</span>middle_layout)<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">        </span>.unwrap();<span style="color: #bbbbbb"></span>
+
+<span style="color: #bbbbbb">    </span>nwg::FlexboxLayout::builder()<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">        </span>.parent(window)<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">        </span>.child(label_b)<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">            </span>.child_size(Size<span style="color: #bbbbbb"> </span>{<span style="color: #bbbbbb"> </span>width: <span style="color: #0000FF; font-weight: bold">D</span>::Percent(<span style="color: #666666">1.0</span>),<span style="color: #bbbbbb"> </span>height: <span style="color: #0000FF; font-weight: bold">PT_50</span><span style="color: #bbbbbb"> </span>})<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">        </span>.build_partial(<span style="color: #666666">&amp;</span>bottom_layout)<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">        </span>.unwrap();<span style="color: #bbbbbb"></span>
+
+<span style="color: #bbbbbb">    </span>nwg::FlexboxLayout::builder()<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">        </span>.parent(window)<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">        </span>.flex_direction(FlexDirection::Column)<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">        </span>.child_layout(<span style="color: #666666">&amp;</span>top_layout)<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">        </span>.child_layout(<span style="color: #666666">&amp;</span>middle_layout)<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">            </span>.child_flex_grow(<span style="color: #666666">1.0</span>)<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">        </span>.child_layout(<span style="color: #666666">&amp;</span>bottom_layout)<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">        </span>.build(<span style="color: #666666">&amp;</span>full_layout)<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">        </span>.unwrap();<span style="color: #bbbbbb"></span>
+}<span style="color: #bbbbbb"></span>
+</pre>
+    
+    
+    
+    
+
+<br><br>
+
+<h3>DynLayout</h3>  
+
+DynLayout layout works like Dynamic Layout in MFC.<br><br>
+
+It uses ratios for moving and sizing a control horizontally and vertically, when its parent Window is resized.<br><br>
+
+Application can define the ratios and call <code>fit</code> function to move and resize a control. An example is to add a control with preferred ratio in <code>OnInit</code> and call the <code>fit</code> method in <code>OnResize</code> method to adjust the position and size of the control.<br><br>
+
+The ratios are in percents <code>(0, 100)</code>, <code>0</code> means not to move or resize a control, <code>100</code> means to move or resize a control a hundre percent accordingly to Window size.<br><br>
+
+A dynamic layout example:
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><span style="color: #008000; font-weight: bold">use</span><span style="color: #bbbbbb"> </span>native_windows_gui<span style="color: #bbbbbb"> </span><span style="color: #008000; font-weight: bold">as</span><span style="color: #bbbbbb"> </span>nwg;<span style="color: #bbbbbb"></span>
+<span style="color: #008000; font-weight: bold">use</span><span style="color: #bbbbbb"> </span>native_windows_derive<span style="color: #bbbbbb"> </span><span style="color: #008000; font-weight: bold">as</span><span style="color: #bbbbbb"> </span>nwd;<span style="color: #bbbbbb"></span>
+
+<span style="color: #008000; font-weight: bold">use</span><span style="color: #bbbbbb"> </span>nwd::{NwgUi,<span style="color: #bbbbbb"> </span>NwgPartial};<span style="color: #bbbbbb"></span>
+<span style="color: #008000; font-weight: bold">use</span><span style="color: #bbbbbb"> </span>nwg::NativeUi;<span style="color: #bbbbbb"></span>
+
+<span style="color: #BC7A00">#[derive(Default, NwgUi)]</span><span style="color: #bbbbbb"></span>
+<span style="color: #008000; font-weight: bold">pub</span><span style="color: #bbbbbb"> </span><span style="color: #008000; font-weight: bold">struct</span> <span style="color: #0000FF; font-weight: bold">Application</span><span style="color: #bbbbbb"> </span>{<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">    </span><span style="color: #BC7A00">#[nwg_control(size: (500, 400), position: (300, 300), title: </span><span style="color: #BA2121">"DynLayout"</span><span style="color: #BC7A00">)]</span><span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">    </span><span style="color: #BC7A00">#[nwg_events(OnInit: [Application::init]</span>,<span style="color: #bbbbbb"> </span>OnResize: [Application::size])]<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">    </span>window: <span style="color: #0000FF; font-weight: bold">nwg</span>::Window,<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">	</span>
+<span style="color: #bbbbbb">    </span><span style="color: #BC7A00">#[nwg_layout(parent: window)]</span><span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">    </span>layout: <span style="color: #0000FF; font-weight: bold">nwg</span>::DynLayout,<span style="color: #bbbbbb"></span>
+
+<span style="color: #bbbbbb">    </span><span style="color: #BC7A00">#[nwg_control(text: </span><span style="color: #BA2121">"Ok"</span><span style="color: #BC7A00">, position: (120, 350), size: (100, 25))]</span><span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">    </span>ok_btn: <span style="color: #0000FF; font-weight: bold">nwg</span>::Button,<span style="color: #bbbbbb">	</span>
+}<span style="color: #bbbbbb"></span>
+
+mpl<span style="color: #bbbbbb"> </span>Application<span style="color: #bbbbbb"> </span>{<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">    </span><span style="color: #008000; font-weight: bold">fn</span> <span style="color: #0000FF">init</span>(<span style="color: #666666">&amp;</span><span style="color: #008000">self</span>)<span style="color: #bbbbbb"> </span>{<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">        </span><span style="color: #008000">self</span>.layout.add_child((<span style="color: #666666">0</span>,<span style="color: #bbbbbb"> </span><span style="color: #666666">100</span>),<span style="color: #bbbbbb"> </span>(<span style="color: #666666">0</span>,<span style="color: #bbbbbb"> </span><span style="color: #666666">0</span>),<span style="color: #bbbbbb"> </span><span style="color: #666666">&amp;</span><span style="color: #008000">self</span>.ok_btn);<span style="color: #bbbbbb"></span>
+
+<span style="color: #bbbbbb">        </span><span style="color: #008000">self</span>.layout.fit();<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">    </span>}<span style="color: #bbbbbb"></span>
+
+<span style="color: #bbbbbb">    </span><span style="color: #008000; font-weight: bold">fn</span> <span style="color: #0000FF">size</span>(<span style="color: #666666">&amp;</span><span style="color: #008000">self</span>)<span style="color: #bbbbbb"> </span>{<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">        </span><span style="color: #008000">self</span>.layout.fit();<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">    </span>}<span style="color: #bbbbbb"></span>
+}<span style="color: #bbbbbb"></span>
+</pre></div>
+
+
+<h3>Examples</h3>
+
+<ul>
+    <li><a href="https://github.com/gabdube/native-windows-gui/blob/master/native-windows-gui/examples/calculator.rs">Calculator</a> ( <a href="https://github.com/gabdube/native-windows-gui/blob/master/native-windows-gui/examples/calculator_d.rs">derive version</a> ) shows how to use a grid layout.</li>
+    <li><a href="https://github.com/gabdube/native-windows-gui/blob/master/native-windows-gui/examples/message_bank.rs">Message bank</a> ( <a href="https://github.com/gabdube/native-windows-gui/blob/master/native-windows-gui/examples/message_bank_d.rs">derive version</a> ) shows how to update a grid layout dynamically.</li>
+    <li><a href="https://github.com/gabdube/native-windows-gui/blob/master/native-windows-gui/examples/flexbox.rs">Flexbox</a> ( <a href="https://github.com/gabdube/native-windows-gui/blob/master/native-windows-gui/examples/flexbox_d.rs">derive version</a> ) shows how to use the flexbox layout.</li>
+</ul>
+
+<br><br><br>
+
+    </div>
+</div>
+
+<script src="style/rustbook.js"></script>
+</body>
+</html>

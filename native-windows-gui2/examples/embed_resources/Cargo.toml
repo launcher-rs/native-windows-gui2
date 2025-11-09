@@ -1,0 +1,14 @@
+[package]
+name = "nwg-embed-resources"
+version = "1.0.0"
+authors = ["launcher-rs"]
+edition = "2024"
+build = "build.rs"
+
+[dependencies]
+native-windows-gui2 = {path = "../../", features=["no-styling", "embed-resource", "list-view", "cursor"]}
+native-windows-derive2 = {path = "../../../native-windows-derive2"}
+
+[build-dependencies]
+embed-resource = "1.3"
+

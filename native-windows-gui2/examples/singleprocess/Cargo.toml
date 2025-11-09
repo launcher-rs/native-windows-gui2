@@ -1,0 +1,11 @@
+[package]
+name = "singleprocess"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+native-windows-gui2 = { path = "../../", features = ["file-dialog","embed-resource","color-dialog","font-dialog"] }
+native-windows-derive2 = {path = "../../../native-windows-derive2"}
+winapi = { version = "0.3", features = ["synchapi","handleapi","windef","ntdef"] }

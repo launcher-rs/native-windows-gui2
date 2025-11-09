@@ -1,0 +1,10 @@
+**/target
+**/*.rs.bk
+**/examples/test.rs
+Cargo.lock
+code
+docs/native-windows-docs/tmp.*
+.vs
+
+# Exclude intellijank
+.idea

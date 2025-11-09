@@ -1,0 +1,90 @@
+[package]
+name = "native-windows-gui2"
+version = "0.1.0"
+authors = ["launcher-rs"]
+edition = "2024"
+
+description = "A rust library to develop native GUI applications on the desktop for Microsoft Windows. Native-windows-gui wraps the native win32 window controls in a rustic API"
+
+repository = "https://github.com/gabdube/native-windows-gui"
+documentation = "https://gabdube.github.io/native-windows-gui/native-windows-docs/index.html"
+
+license = "MIT"
+
+build = "build.rs"
+keywords = ["gui", "ui", "windows"]
+
+[dependencies]
+winapi = { version = "0.3", features = [
+  "winuser", "wingdi", "winbase", "libloaderapi", "processthreadsapi",
+  "errhandlingapi", "winerror", "commctrl", "sysinfoapi", "shobjidl", "combaseapi",
+  "commdlg", "d2d1", "objbase", "dwrite", "winnls", "shellapi", "wincodec", "stringapiset", "dwmapi", "impl-default"] }
+
+lazy_static = "1.4.0"
+bitflags = "1.1.0"
+newline-converter = { version = "0.2.0", optional = true }
+stretch = { version = "0.3.2", optional = true }
+muldiv = { version = "0.2", optional = true }
+plotters = { version = "0.3", optional = true, default-features=false, features=["all_series", "all_elements"] }
+plotters-backend = { version = "0.3", optional = true }
+
+# Integration for raw-window-handle
+raw-window-handle = { version = "0.3.3", optional = true }
+
+[dev-dependencies]
+native-windows-derive2 = { path = "../native-windows-derive2/" }
+
+[build-dependencies]
+winapi-build = "0.1.1"
+
+[features]
+default = [ "all" ]
+file-dialog = []
+color-dialog = []
+font-dialog = []
+datetime-picker = []
+progress-bar = []
+tabs = []
+tree-view = []
+fancy-window = []
+listbox = []
+combobox = []
+tray-notification = []
+message-window = []
+timer = []
+animation-timer = []
+notice = []
+list-view = []
+image-decoder = []
+number-select = []
+cursor = []
+clipboard = []
+menu = []
+trackbar = []
+extern-canvas = []
+frame = []
+tooltip = []
+status-bar = []
+winnls = []
+textbox = ["newline-converter"]
+rich-textbox = ["newline-converter"]
+image-list = []
+no-styling = []
+embed-resource = []
+scroll-bar = []
+tree-view-iterator = []
+dynamic_layout = []
+plotting = ["plotters", "plotters-backend"]
+flexbox = ["stretch"]
+high-dpi = ["muldiv"]
+raw-win-handle = ["raw-window-handle"]
+all = ["file-dialog", "color-dialog", "font-dialog", "datetime-picker", "progress-bar", "timer", "notice", "list-view", "cursor", "image-decoder",
+       "tabs", "tree-view", "fancy-window", "listbox", "combobox", "tray-notification", "message-window", "number-select", "clipboard", "menu",
+       "trackbar", "extern-canvas", "frame", "tooltip", "status-bar", "winnls", "textbox", "rich-textbox", "image-list", "embed-resource", "scroll-bar",
+       "tree-view-iterator", "flexbox", "dynamic_layout", "animation-timer", "plotting"]
+
+[package.metadata.docs.rs]
+# This also sets the default target to `x86_64-pc-windows-msvc`
+features = [ "all" ]
+all-features = false
+targets = ["x86_64-pc-windows-msvc"]

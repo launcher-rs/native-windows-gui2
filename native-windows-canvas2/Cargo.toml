@@ -1,0 +1,17 @@
+[package]
+name = "native-windows-canvas2"
+version = "0.0.1"
+authors = ["launcher-rs"]
+edition = "2024"
+
+description = "A low level Direct2D wrapper for native-windows-gui"
+repository = "https://github.com/gabdube/native-windows-gui"
+documentation = "https://gabdube.github.io/native-windows-gui/native-windows-docs/index.html"
+
+
+license = "MIT"
+keywords = ["gui", "ui", "windows", "direct2d", "graphics"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
