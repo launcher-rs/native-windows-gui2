@@ -3,9 +3,9 @@ use crate::layouts::{FlexboxLayoutChild, GridLayoutChild, LayoutChild, layout_pa
 use crate::shared::Parameters;
 use quote::ToTokens;
 
-const TOP_LEVEL: &'static [&'static str] = &["Window", "MessageWindow", "ExternCanvas"];
+const TOP_LEVEL: &[&str] = &["Window", "MessageWindow", "ExternCanvas"];
 
-const AUTO_PARENT: &'static [&'static str] = &[
+const AUTO_PARENT: &[&str] = &[
     "Window",
     "TabsContainer",
     "Tab",
@@ -62,14 +62,11 @@ impl<'a> NwgControl<'a> {
             ),
         };
 
-        match params.params.iter().find(|p| p.ident == "ty").map(|p| &p.e) {
-            Some(syn::Expr::Path(p)) => match p.path.segments.last().map(|seg| seg.ident.clone()) {
-                Some(ty) => {
-                    return ty;
-                }
-                None => {}
-            },
-            _ => {}
+        if let Some(syn::Expr::Path(p)) =
+            params.params.iter().find(|p| p.ident == "ty").map(|p| &p.e)
+            && let Some(ty) = p.path.segments.last().map(|seg| seg.ident.clone())
+        {
+            return ty;
         }
 
         // Use field type
@@ -92,7 +89,7 @@ impl<'a> NwgControl<'a> {
         let flags_index = self.names.iter().position(|n| n == "flags");
         if let Some(i) = flags_index {
             let old_flags = self.values[i].clone();
-            self.values[i] = crate::controls::expand_flags(&self.id, &self.ty, old_flags);
+            self.values[i] = crate::controls::expand_flags(self.id, &self.ty, old_flags);
         }
     }
 
@@ -158,14 +155,11 @@ impl<'a> NwgResource<'a> {
             ),
         };
 
-        match params.params.iter().find(|p| p.ident == "ty").map(|p| &p.e) {
-            Some(syn::Expr::Path(p)) => match p.path.segments.last().map(|seg| seg.ident.clone()) {
-                Some(ty) => {
-                    return ty;
-                }
-                None => {}
-            },
-            _ => {}
+        if let Some(syn::Expr::Path(p)) =
+            params.params.iter().find(|p| p.ident == "ty").map(|p| &p.e)
+            && let Some(ty) = p.path.segments.last().map(|seg| seg.ident.clone())
+        {
+            return ty;
         }
 
         // Use field type
@@ -468,7 +462,7 @@ impl<'a> ToTokens for NwgUiLayouts<'a> {
                     .controls
                     .iter()
                     .filter(|c| c.layout.is_some() && c.layout_index == i)
-                    .map(|c| ControlLayout(c))
+                    .map(ControlLayout)
                     .collect(),
             })
             .collect();
@@ -603,7 +597,7 @@ impl<'a> NwgUi<'a> {
                     parent: NwgPartial::parse_parent(field),
                 };
 
-                events.add_partial(&partial.id);
+                events.add_partial(partial.id);
                 events.parse(field);
 
                 partials.push(partial);
@@ -616,15 +610,13 @@ impl<'a> NwgUi<'a> {
             let has_attr_parent = layouts[i].names.iter().any(|n| n == "parent");
             if has_attr_parent {
                 layouts[i].expand_parent();
+            } else if partial {
+                layouts[i].names.push(parent_ident.clone());
+                layouts[i].values.push(partial_parent_expr.clone());
             } else {
-                if partial {
-                    layouts[i].names.push(parent_ident.clone());
-                    layouts[i].values.push(partial_parent_expr.clone());
-                } else {
-                    panic!(
-                        "Auto detection of layout parent outside of partial is not yet implemented!"
-                    );
-                }
+                panic!(
+                    "Auto detection of layout parent outside of partial is not yet implemented!"
+                );
             }
 
             // Match the layout item to the layout object
@@ -632,8 +624,8 @@ impl<'a> NwgUi<'a> {
                 if let Some(child_layout) = control.layout.as_mut() {
                     let layout = &layouts[i];
 
-                    if child_layout.parent_matches(&layout.id) {
-                        child_layout.parse(&layout.ty);
+                    if child_layout.parent_matches(layout.id) {
+                        child_layout.parse(layout.ty);
                         control.layout_index = i;
                     }
                 }
@@ -641,7 +633,7 @@ impl<'a> NwgUi<'a> {
         }
 
         for i in 0..(controls.len()) {
-            let top_level = TOP_LEVEL.iter().any(|top| &controls[i].ty == top);
+            let top_level = TOP_LEVEL.iter().any(|top| controls[i].ty == top);
             if top_level {
                 continue;
             }
@@ -674,14 +666,11 @@ impl<'a> NwgUi<'a> {
 
         // Parent Weight
         fn compute_weight(controls: &[NwgControl], index: usize, weight: &mut [u16; 2]) {
-            match &controls[index].parent_id {
-                Some(p) => {
-                    if let Some(parent_index) = controls.iter().position(|c| &c.id == &p) {
-                        compute_weight(controls, parent_index, weight);
-                        weight[0] += 1;
-                    }
-                }
-                None => {}
+            if let Some(p) = &controls[index].parent_id
+                && let Some(parent_index) = controls.iter().position(|c| c.id == p)
+            {
+                compute_weight(controls, parent_index, weight);
+                weight[0] += 1;
             }
         }
 
@@ -712,23 +701,23 @@ impl<'a> NwgUi<'a> {
         }
     }
 
-    pub fn controls(&self) -> NwgUiControls {
+    pub fn controls(&self) -> NwgUiControls<'_> {
         NwgUiControls(self)
     }
 
-    pub fn resources(&self) -> NwgUiResources {
+    pub fn resources(&self) -> NwgUiResources<'_> {
         NwgUiResources(self)
     }
 
-    pub fn events(&self) -> NwgUiEvents {
+    pub fn events(&self) -> NwgUiEvents<'_> {
         NwgUiEvents(self)
     }
 
-    pub fn layouts(&self) -> NwgUiLayouts {
+    pub fn layouts(&self) -> NwgUiLayouts<'_> {
         NwgUiLayouts(self)
     }
 
-    pub fn partials(&self) -> NwgUiPartials {
+    pub fn partials(&self) -> NwgUiPartials<'_> {
         NwgUiPartials(self)
     }
 }

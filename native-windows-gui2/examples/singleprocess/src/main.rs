@@ -10,7 +10,6 @@ use nwd::NwgUi;
 use nwg::NativeUi;
 use std::ptr;
 use winapi::shared::minwindef::BOOL;
-use winapi::shared::ntdef::BOOLEAN;
 use winapi::um::winuser::{FindWindowW, IsWindow, SetForegroundWindow, ShowWindow, SW_NORMAL};
 
 #[derive(Default, NwgUi)]
@@ -53,10 +52,7 @@ pub fn is_process_single() -> bool {
     use std::os::windows::ffi::OsStrExt;
 
     let flags = "sdfhrh57b56dste6hjghjgh";
-    let flags: Vec<u16> = OsStr::new(flags)
-        .encode_wide()
-        .chain(Some(0u16).into_iter())
-        .collect();
+    let flags: Vec<u16> = OsStr::new(flags).encode_wide().chain(Some(0u16)).collect();
 
     unsafe {
         let h_mutex: HANDLE = CreateMutexW(ptr::null_mut(), 0, flags.as_ptr());
@@ -68,18 +64,15 @@ pub fn is_process_single() -> bool {
             return true;
         }
 
-        return false;
+        false
     }
 }
 
-pub fn to_utf16<'a>(s: &'a str) -> Vec<u16> {
+pub fn to_utf16(s: &str) -> Vec<u16> {
     use std::ffi::OsStr;
     use std::os::windows::ffi::OsStrExt;
 
-    OsStr::new(s)
-        .encode_wide()
-        .chain(Some(0u16).into_iter())
-        .collect()
+    OsStr::new(s).encode_wide().chain(Some(0u16)).collect()
 }
 
 fn main() {
@@ -88,14 +81,13 @@ fn main() {
 
     // 方式二： 发现并激活当前窗口,不好用
     unsafe {
-        use winapi::shared::ntdef::HANDLE;
-        let className = to_utf16("ClassName");
-        let windowName = to_utf16("Caption11");
-        let hWnd = FindWindowW(className.as_ptr(), windowName.as_ptr());
-        let result: BOOL = IsWindow(hWnd);
-        if (result != 0) {
-            ShowWindow(hWnd, SW_NORMAL);
-            SetForegroundWindow(hWnd);
+        let class_name = to_utf16("ClassName");
+        let window_name = to_utf16("Caption11");
+        let h_wnd = FindWindowW(class_name.as_ptr(), window_name.as_ptr());
+        let result: BOOL = IsWindow(h_wnd);
+        if result != 0 {
+            ShowWindow(h_wnd, SW_NORMAL);
+            SetForegroundWindow(h_wnd);
             return;
         }
     }

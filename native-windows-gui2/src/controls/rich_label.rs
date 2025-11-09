@@ -195,58 +195,58 @@ impl RichLabel {
     /// It is not possible to get the base font handle of a rich label. Use `char_format` instead.
     pub fn set_font(&self, font: Option<&Font>) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-        unsafe {
+
             wh::set_window_font(handle, font.map(|f| f.handle), true);
-        }
+
     }
 
     /// Return true if the control is visible to the user. Will return true even if the
     /// control is outside of the parent client view (ex: at the position (10000, 10000))
     pub fn visible(&self) -> bool {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-        unsafe { wh::get_window_visibility(handle) }
+         wh::get_window_visibility(handle)
     }
 
     /// Show or hide the control to the user
     pub fn set_visible(&self, v: bool) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-        unsafe { wh::set_window_visibility(handle, v) }
+         wh::set_window_visibility(handle, v)
     }
 
     /// Return the size of the button in the parent window
     pub fn size(&self) -> (u32, u32) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-        unsafe { wh::get_window_size(handle) }
+        wh::get_window_size(handle)
     }
 
     /// Set the size of the button in the parent window
     pub fn set_size(&self, x: u32, y: u32) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-        unsafe { wh::set_window_size(handle, x, y, false) }
+        wh::set_window_size(handle, x, y, false)
     }
 
     /// Return the position of the button in the parent window
     pub fn position(&self) -> (i32, i32) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-        unsafe { wh::get_window_position(handle) }
+         wh::get_window_position(handle)
     }
 
     /// Set the position of the button in the parent window
     pub fn set_position(&self, x: i32, y: i32) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-        unsafe { wh::set_window_position(handle, x, y) }
+         wh::set_window_position(handle, x, y)
     }
 
     /// Return the text displayed in the TextInput
     pub fn text(&self) -> String {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-        unsafe { wh::get_window_text(handle) }
+       wh::get_window_text(handle)
     }
 
     /// Set the text displayed in the TextInput
     pub fn set_text<'a>(&self, v: &'a str) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-        unsafe { wh::set_window_text(handle, v) }
+         wh::set_window_text(handle, v)
     }
 
     /// Winapi class name used during control creation
@@ -266,7 +266,7 @@ impl RichLabel {
         ES_READONLY | WS_CHILD
     }
 
-    unsafe fn override_events(&self) {
+    fn override_events(&self) {
         use crate::bind_raw_event_handler_inner;
         use std::{mem, ptr};
         use winapi::shared::windef::{HBRUSH, POINT, RECT};
@@ -283,90 +283,92 @@ impl RichLabel {
 
         //let cursor = Cursor::from_system(OemCursor::Normal);
         let handler0 = bind_raw_event_handler_inner(&self.handle, 0, move |hwnd, msg, w, l| {
-            match msg {
-                WM_NCCALCSIZE => {
-                    let client_height = *callback_line_height.borrow();
-                    if w == 0 || client_height.is_none() {
-                        return None;
+            unsafe {
+                match msg {
+                    WM_NCCALCSIZE => {
+                        let client_height = *callback_line_height.borrow();
+                        if w == 0 || client_height.is_none() {
+                            return None;
+                        }
+
+                        let client_height = client_height.unwrap();
+
+                        // Calculate NC area to center text.
+                        let mut client: RECT = mem::zeroed();
+                        let mut window: RECT = mem::zeroed();
+                        GetClientRect(hwnd, &mut client);
+                        GetWindowRect(hwnd, &mut window);
+
+                        let window_height = window.bottom - window.top;
+                        let center = ((window_height - client_height) / 2) - 1;
+
+                        // Save the info
+                        let info_ptr: *mut NCCALCSIZE_PARAMS = l as *mut NCCALCSIZE_PARAMS;
+                        let info = &mut *info_ptr;
+
+                        info.rgrc[0].top += center;
+                        info.rgrc[0].bottom -= center;
+
+                        None
                     }
+                    WM_NCPAINT => {
+                        let client_height = *callback_line_height.borrow();
+                        if client_height.is_none() {
+                            return None;
+                        }
 
-                    let client_height = client_height.unwrap();
+                        let mut window: RECT = mem::zeroed();
+                        let mut client: RECT = mem::zeroed();
+                        GetWindowRect(hwnd, &mut window);
+                        GetClientRect(hwnd, &mut client);
 
-                    // Calculate NC area to center text.
-                    let mut client: RECT = mem::zeroed();
-                    let mut window: RECT = mem::zeroed();
-                    GetClientRect(hwnd, &mut client);
-                    GetWindowRect(hwnd, &mut window);
+                        let mut pt1 = POINT {
+                            x: window.left,
+                            y: window.top,
+                        };
+                        ScreenToClient(hwnd, &mut pt1);
 
-                    let window_height = window.bottom - window.top;
-                    let center = ((window_height - client_height) / 2) - 1;
+                        let mut pt2 = POINT {
+                            x: window.right,
+                            y: window.bottom,
+                        };
+                        ScreenToClient(hwnd, &mut pt2);
 
-                    // Save the info
-                    let info_ptr: *mut NCCALCSIZE_PARAMS = l as *mut NCCALCSIZE_PARAMS;
-                    let info = &mut *info_ptr;
+                        let top = RECT {
+                            left: 0,
+                            top: pt1.y,
+                            right: client.right,
+                            bottom: client.top,
+                        };
 
-                    info.rgrc[0].top += center;
-                    info.rgrc[0].bottom -= center;
+                        let bottom = RECT {
+                            left: 0,
+                            top: client.bottom,
+                            right: client.right,
+                            bottom: pt2.y,
+                        };
 
-                    None
-                }
-                WM_NCPAINT => {
-                    let client_height = *callback_line_height.borrow();
-                    if client_height.is_none() {
-                        return None;
+                        let dc = GetDC(hwnd);
+                        let brush = COLOR_WINDOW as HBRUSH;
+                        FillRect(dc, &top, brush);
+                        FillRect(dc, &bottom, brush);
+                        ReleaseDC(hwnd, dc);
+                        None
                     }
-
-                    let mut window: RECT = mem::zeroed();
-                    let mut client: RECT = mem::zeroed();
-                    GetWindowRect(hwnd, &mut window);
-                    GetClientRect(hwnd, &mut client);
-
-                    let mut pt1 = POINT {
-                        x: window.left,
-                        y: window.top,
-                    };
-                    ScreenToClient(hwnd, &mut pt1);
-
-                    let mut pt2 = POINT {
-                        x: window.right,
-                        y: window.bottom,
-                    };
-                    ScreenToClient(hwnd, &mut pt2);
-
-                    let top = RECT {
-                        left: 0,
-                        top: pt1.y,
-                        right: client.right,
-                        bottom: client.top,
-                    };
-
-                    let bottom = RECT {
-                        left: 0,
-                        top: client.bottom,
-                        right: client.right,
-                        bottom: pt2.y,
-                    };
-
-                    let dc = GetDC(hwnd);
-                    let brush = COLOR_WINDOW as HBRUSH;
-                    FillRect(dc, &top, brush);
-                    FillRect(dc, &bottom, brush);
-                    ReleaseDC(hwnd, dc);
-                    None
+                    WM_SIZE => {
+                        SetWindowPos(
+                            hwnd,
+                            ptr::null_mut(),
+                            0,
+                            0,
+                            0,
+                            0,
+                            SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOMOVE | SWP_FRAMECHANGED,
+                        );
+                        None
+                    }
+                    _ => None,
                 }
-                WM_SIZE => {
-                    SetWindowPos(
-                        hwnd,
-                        ptr::null_mut(),
-                        0,
-                        0,
-                        0,
-                        0,
-                        SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOMOVE | SWP_FRAMECHANGED,
-                    );
-                    None
-                }
-                _ => None,
             }
         });
 
@@ -505,9 +507,9 @@ impl<'a> RichLabelBuilder<'a> {
             }
         }
 
-        unsafe {
+
             out.override_events();
-        }
+
 
         Ok(())
     }

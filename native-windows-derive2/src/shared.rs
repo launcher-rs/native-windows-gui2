@@ -4,6 +4,7 @@ use syn::punctuated::Punctuated;
 #[derive(Debug)]
 pub struct Param {
     pub ident: syn::Ident,
+    #[allow(dead_code)]
     pub sep: Token![:],
     pub e: syn::Expr,
 }

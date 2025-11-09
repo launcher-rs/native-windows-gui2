@@ -39,7 +39,7 @@ pub struct ImageDecoder {
 
 impl ImageDecoder {
     pub fn new() -> Result<ImageDecoder, NwgError> {
-        let factory = unsafe { img::create_image_factory() }?;
+        let factory = img::create_image_factory()?;
         Ok(ImageDecoder { factory })
     }
 
@@ -266,7 +266,7 @@ impl ImageData {
         The bitmap returned is considered "owned".
     */
     pub fn as_bitmap(&self) -> Result<Bitmap, NwgError> {
-        unsafe { img::create_bitmap_from_wic(self) }
+        img::create_bitmap_from_wic(self)
     }
 }
 
@@ -329,7 +329,7 @@ pub struct ImageDecoderBuilder {}
 
 impl ImageDecoderBuilder {
     pub fn build(self, out: &mut ImageDecoder) -> Result<(), NwgError> {
-        let factory = unsafe { img::create_image_factory() }?;
+        let factory = img::create_image_factory()?;
         *out = ImageDecoder { factory };
         Ok(())
     }

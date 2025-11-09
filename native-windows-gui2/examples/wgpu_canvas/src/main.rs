@@ -13,9 +13,9 @@ use std::{borrow::Cow, cell::RefCell, mem, ops::Range, slice, time::Duration};
 
 mod glb;
 
-const MODELS: &'static [&'static str; 3] = &["box.glb", "suzanne.glb", "teapot.glb"];
+const MODELS: &[&str; 3] = &["box.glb", "suzanne.glb", "teapot.glb"];
 
-const MATERIALS: &'static [&'static str; 5] = &[
+const MATERIALS: &[&str; 5] = &[
     "Green Plastic",
     "Poopy Bronze",
     "Grape Juice",
@@ -599,8 +599,8 @@ impl CanvasTest {
         let swapchain_description = wgpu::SwapChainDescriptor {
             usage: wgpu::TextureUsage::RENDER_ATTACHMENT,
             format: swapchain_format,
-            width: width,
-            height: height,
+            width,
+            height,
             present_mode: wgpu::PresentMode::Mailbox,
         };
 
@@ -921,7 +921,7 @@ pub fn align(addr: wgpu::BufferAddress, align: wgpu::BufferAddress) -> wgpu::Buf
     (((addr as isize) + ((align as isize) - 1)) & -(align as isize)) as wgpu::BufferAddress
 }
 
-pub fn slice_as_bytes<'a, D: Copy>(data: &'a [D]) -> &'a [u8] {
+pub fn slice_as_bytes<D: Copy>(data: &[D]) -> &[u8] {
     unsafe { data.align_to().1 }
 }
 

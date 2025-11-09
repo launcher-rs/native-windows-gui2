@@ -29,6 +29,7 @@ pub fn is_bitmap(handle: HBITMAP) -> bool {
     unsafe { GetBitmapBits(handle, 1, &mut bits as *mut [u8; 1] as LPVOID) != 0 }
 }
 
+#[allow(dead_code)]
 pub fn destroy_icon(icon: HANDLE) {
     unsafe {
         winapi::um::winuser::DestroyIcon(icon as _);
@@ -47,7 +48,7 @@ pub fn destroy_obj(obj: HANDLE) {
     }
 }
 
-pub unsafe fn build_font(
+pub fn build_font(
     size: i32,
     weight: u32,
     style: [bool; 3],
@@ -71,22 +72,24 @@ pub unsafe fn build_font(
 
     let (size, _) = super::high_dpi::logical_to_physical(size as i32, 0);
 
-    let handle = CreateFontW(
-        size as c_int, // nHeight
-        0,
-        0,
-        0,                    // nWidth, nEscapement, nOrientation
-        weight as c_int,      // fnWeight
-        use_italic as u32,    // fdwItalic
-        use_underline as u32, // fdwUnderline
-        use_strikeout as u32, // fdwStrikeOut
-        DEFAULT_CHARSET,      // fdwCharSet
-        OUT_DEFAULT_PRECIS,   // fdwOutputPrecision
-        CLIP_DEFAULT_PRECIS,  // fdwClipPrecision
-        CLEARTYPE_QUALITY,    // fdwQuality
-        VARIABLE_PITCH,       // fdwPitchAndFamily
-        family_name_ptr,      // lpszFace
-    );
+    let handle = unsafe {
+        CreateFontW(
+            size as c_int, // nHeight
+            0,
+            0,
+            0,                    // nWidth, nEscapement, nOrientation
+            weight as c_int,      // fnWeight
+            use_italic as u32,    // fdwItalic
+            use_underline as u32, // fdwUnderline
+            use_strikeout as u32, // fdwStrikeOut
+            DEFAULT_CHARSET,      // fdwCharSet
+            OUT_DEFAULT_PRECIS,   // fdwOutputPrecision
+            CLIP_DEFAULT_PRECIS,  // fdwClipPrecision
+            CLEARTYPE_QUALITY,    // fdwQuality
+            VARIABLE_PITCH,       // fdwPitchAndFamily
+            family_name_ptr,      // lpszFace
+        )
+    };
 
     drop(fam);
 
@@ -112,51 +115,59 @@ pub unsafe fn build_image<'a>(
     let filepath = to_utf16(source);
     let (width, height) = size.unwrap_or((0, 0));
 
-    let mut handle = LoadImageW(
-        ptr::null_mut(),
-        filepath.as_ptr(),
-        image_type,
-        width as i32,
-        height as i32,
-        LR_LOADFROMFILE,
-    );
+    let mut handle = unsafe {
+        LoadImageW(
+            ptr::null_mut(),
+            filepath.as_ptr(),
+            image_type,
+            width as i32,
+            height as i32,
+            LR_LOADFROMFILE,
+        )
+    };
     if handle.is_null() {
-        let (code, _) = get_system_error();
+        let (code, _) = unsafe { get_system_error() };
         if code == 2 && !strict {
             // If the file was not found (err code: 2) and the loading is not strict, replace the image by the system error icon
             handle = match image_type {
                 IMAGE_ICON => {
                     let dr = (IDI_ERROR as usize) as *const u16;
-                    LoadImageW(
-                        ptr::null_mut(),
-                        dr,
-                        IMAGE_ICON,
-                        0,
-                        0,
-                        LR_DEFAULTSIZE | LR_SHARED,
-                    )
+                    unsafe {
+                        LoadImageW(
+                            ptr::null_mut(),
+                            dr,
+                            IMAGE_ICON,
+                            0,
+                            0,
+                            LR_DEFAULTSIZE | LR_SHARED,
+                        )
+                    }
                 }
                 IMAGE_CURSOR => {
                     let dr = (IDC_ARROW as usize) as *const u16;
-                    LoadImageW(
-                        ptr::null_mut(),
-                        dr,
-                        IMAGE_CURSOR,
-                        0,
-                        0,
-                        LR_DEFAULTSIZE | LR_SHARED,
-                    )
+                    unsafe {
+                        LoadImageW(
+                            ptr::null_mut(),
+                            dr,
+                            IMAGE_CURSOR,
+                            0,
+                            0,
+                            LR_DEFAULTSIZE | LR_SHARED,
+                        )
+                    }
                 }
                 IMAGE_BITMAP => {
                     let dr = (32754 as usize) as *const u16;
-                    LoadImageW(
-                        ptr::null_mut(),
-                        dr,
-                        IMAGE_BITMAP,
-                        0,
-                        0,
-                        LR_CREATEDIBSECTION | LR_DEFAULTSIZE | LR_SHARED,
-                    )
+                    unsafe {
+                        LoadImageW(
+                            ptr::null_mut(),
+                            dr,
+                            IMAGE_BITMAP,
+                            0,
+                            0,
+                            LR_CREATEDIBSECTION | LR_DEFAULTSIZE | LR_SHARED,
+                        )
+                    }
                 }
                 _ => {
                     unreachable!()
@@ -243,14 +254,16 @@ pub unsafe fn build_oem_image(
         LR_SHARED
     };
 
-    let handle = LoadImageW(
-        ptr::null_mut(),
-        res_identifier,
-        c_res_type,
-        width as i32,
-        height as i32,
-        flags,
-    );
+    let handle = unsafe {
+        LoadImageW(
+            ptr::null_mut(),
+            res_identifier,
+            c_res_type,
+            width as i32,
+            height as i32,
+            flags,
+        )
+    };
 
     if handle.is_null() {
         Err(NwgError::resource_create(
@@ -344,7 +357,7 @@ pub unsafe fn bitmap_from_memory(source: &[u8]) -> Result<HANDLE, NwgError> {
 */
 #[cfg(feature = "image-decoder")]
 pub unsafe fn bitmap_from_memory(src: &[u8]) -> Result<HANDLE, NwgError> {
-    build_image_decoder_from_memory(src, None)
+    unsafe { build_image_decoder_from_memory(src, None) }
 }
 
 #[cfg(feature = "image-decoder")]
@@ -357,20 +370,22 @@ pub unsafe fn icon_from_memory(
     use winapi::um::winuser::{CreateIconIndirect, LoadImageW};
     use winapi::um::winuser::{ICONINFO, IDI_ERROR, IMAGE_ICON, LR_DEFAULTSIZE, LR_SHARED};
 
-    let color_bmp = build_image_decoder_from_memory(src, size);
+    let color_bmp = unsafe { build_image_decoder_from_memory(src, size) };
     if color_bmp.is_err() {
         if strict {
             return color_bmp;
         } else {
             let dr = (IDI_ERROR as usize) as *const u16;
-            return Ok(LoadImageW(
-                ptr::null_mut(),
-                dr,
-                IMAGE_ICON,
-                0,
-                0,
-                LR_DEFAULTSIZE | LR_SHARED,
-            ));
+            return Ok(unsafe {
+                LoadImageW(
+                    ptr::null_mut(),
+                    dr,
+                    IMAGE_ICON,
+                    0,
+                    0,
+                    LR_DEFAULTSIZE | LR_SHARED,
+                )
+            });
         }
     }
 
@@ -383,7 +398,7 @@ pub unsafe fn icon_from_memory(
         hbmColor: color_bmp as _,
     };
 
-    let icon = CreateIconIndirect(&mut icon_info);
+    let icon = unsafe { CreateIconIndirect(&mut icon_info) };
     match icon.is_null() {
         true => match strict {
             true => Err(NwgError::resource_create(
@@ -391,18 +406,20 @@ pub unsafe fn icon_from_memory(
             )),
             false => {
                 let dr = (IDI_ERROR as usize) as *const u16;
-                Ok(LoadImageW(
-                    ptr::null_mut(),
-                    dr,
-                    IMAGE_ICON,
-                    0,
-                    0,
-                    LR_DEFAULTSIZE | LR_SHARED,
-                ))
+                Ok(unsafe {
+                    LoadImageW(
+                        ptr::null_mut(),
+                        dr,
+                        IMAGE_ICON,
+                        0,
+                        0,
+                        LR_DEFAULTSIZE | LR_SHARED,
+                    )
+                })
             }
         },
         false => {
-            DeleteObject(color_bmp);
+            unsafe { DeleteObject(color_bmp) };
             Ok(icon as _)
         }
     }
@@ -440,23 +457,25 @@ pub unsafe fn create_file_dialog<'a, 'b>(
     };
 
     let mut handle: *mut IFileDialog = ptr::null_mut();
-    let r = CoCreateInstance(
-        &clsid,
-        ptr::null_mut(),
-        CLSCTX_INPROC_SERVER,
-        &uuid,
-        &mut handle as *mut _ as *mut LPVOID,
-    );
+    let r = unsafe {
+        CoCreateInstance(
+            &clsid,
+            ptr::null_mut(),
+            CLSCTX_INPROC_SERVER,
+            &uuid,
+            &mut handle as *mut _ as *mut LPVOID,
+        )
+    };
     if r != S_OK {
         return Err(NwgError::file_dialog("Filedialog creation failed"));
     }
 
-    let file_dialog = &mut *handle;
+    let file_dialog = unsafe { &mut *handle };
     let mut flags = 0;
 
     // Set dialog options
-    if file_dialog.GetOptions(&mut flags) != S_OK {
-        file_dialog.Release();
+    if unsafe { file_dialog.GetOptions(&mut flags) } != S_OK {
+        unsafe { file_dialog.Release() };
         return Err(NwgError::file_dialog("Filedialog creation failed"));
     }
 
@@ -466,17 +485,19 @@ pub unsafe fn create_file_dialog<'a, 'b>(
         0
     };
     let multiselect = if multiselect { FOS_ALLOWMULTISELECT } else { 0 };
-    if file_dialog.SetOptions(flags | FOS_FORCEFILESYSTEM | use_dir | multiselect) != S_OK {
-        file_dialog.Release();
+    if unsafe { file_dialog.SetOptions(flags | FOS_FORCEFILESYSTEM | use_dir | multiselect) }
+        != S_OK
+    {
+        unsafe { file_dialog.Release() };
         return Err(NwgError::file_dialog("Filedialog creation failed"));
     }
 
     // Set the default folder
     match &default_folder {
-        &Some(ref f) => match file_dialog_set_default_folder(file_dialog, f) {
+        &Some(ref f) => match unsafe { file_dialog_set_default_folder(file_dialog, f) } {
             Ok(_) => (),
             Err(e) => {
-                file_dialog.Release();
+                unsafe { file_dialog.Release() };
                 return Err(e);
             }
         },
@@ -485,11 +506,11 @@ pub unsafe fn create_file_dialog<'a, 'b>(
 
     // Set the default filters
     match &filters {
-        &Some(ref f) => match file_dialog_set_filters(file_dialog, f) {
+        &Some(ref f) => match unsafe { file_dialog_set_filters(file_dialog, f) } {
             Ok(_) => (),
             Err(e) => {
                 println!("set filters");
-                file_dialog.Release();
+                unsafe { file_dialog.Release() };
                 return Err(e);
             }
         },
@@ -529,37 +550,39 @@ pub unsafe fn file_dialog_set_default_folder<'a>(
     let mut shellitem: *mut IShellItem = ptr::null_mut();
     let path = to_utf16(&folder_name);
 
-    if SHCreateItemFromParsingName(
-        path.as_ptr(),
-        ptr::null_mut(),
-        &IShellItem::uuidof(),
-        &mut shellitem as *mut _ as *mut *mut c_void,
-    ) != S_OK
+    if unsafe {
+        SHCreateItemFromParsingName(
+            path.as_ptr(),
+            ptr::null_mut(),
+            &IShellItem::uuidof(),
+            &mut shellitem as *mut _ as *mut *mut c_void,
+        )
+    } != S_OK
     {
         return Err(NwgError::file_dialog("Failed to set default folder"));
     }
 
-    let shellitem = &mut *shellitem;
+    let shellitem = unsafe { &mut *shellitem };
     let mut file_properties: SFGAOF = 0;
 
-    let results = shellitem.GetAttributes(SFGAO_FOLDER, &mut file_properties);
+    let results = unsafe { shellitem.GetAttributes(SFGAO_FOLDER, &mut file_properties) };
 
     if results != S_OK && results != S_FALSE {
-        shellitem.Release();
+        unsafe { shellitem.Release() };
         return Err(NwgError::file_dialog("Failed to set default folder"));
     }
 
     if file_properties & SFGAO_FOLDER != SFGAO_FOLDER {
-        shellitem.Release();
+        unsafe { shellitem.Release() };
         return Err(NwgError::file_dialog("Failed to set default folder"));
     }
 
-    if dialog.SetDefaultFolder(shellitem) != S_OK {
-        shellitem.Release();
+    if unsafe { dialog.SetDefaultFolder(shellitem) } != S_OK {
+        unsafe { shellitem.Release() };
         return Err(NwgError::file_dialog("Failed to set default folder"));
     }
 
-    shellitem.Release();
+    unsafe { shellitem.Release() };
 
     Ok(())
 }
@@ -594,7 +617,7 @@ pub unsafe fn file_dialog_set_filters<'a>(
     }
 
     let filters_count = raw_filters.len() as UINT;
-    if dialog.SetFileTypes(filters_count, raw_filters.as_ptr()) == S_OK {
+    if unsafe { dialog.SetFileTypes(filters_count, raw_filters.as_ptr()) } == S_OK {
         Ok(())
     } else {
         let err = format!("Failed to set the filters using {:?}", filters);
@@ -608,12 +631,12 @@ pub unsafe fn filedialog_get_item(dialog: &mut IFileDialog) -> Result<OsString, 
 
     let mut _item: *mut IShellItem = ptr::null_mut();
 
-    if dialog.GetResult(&mut _item) != S_OK {
+    if unsafe { dialog.GetResult(&mut _item) } != S_OK {
         return Err(NwgError::file_dialog("Failed to get dialog item"));
     }
 
-    let text = get_ishellitem_path(&mut *_item);
-    (&mut *_item).Release();
+    let text = unsafe { get_ishellitem_path(&mut *_item) };
+    unsafe { (&mut *_item).Release() };
 
     text
 }
@@ -628,24 +651,24 @@ pub unsafe fn filedialog_get_items(
     let mut _item: *mut IShellItem = ptr::null_mut();
     let mut _items: *mut IShellItemArray = ptr::null_mut();
 
-    if dialog.GetResults(&mut _items as *mut _) != S_OK {
+    if unsafe { dialog.GetResults(&mut _items as *mut _) } != S_OK {
         return Err(NwgError::file_dialog("Failed to get dialog items"));
     }
 
-    let items = &mut *_items;
+    let items = unsafe { &mut *_items };
     let mut count: DWORD = 0;
-    items.GetCount(&mut count);
+    unsafe { items.GetCount(&mut count) };
 
     let mut item_names: Vec<OsString> = Vec::with_capacity(count as usize);
     for i in 0..count {
-        items.GetItemAt(i, &mut _item);
-        match get_ishellitem_path(&mut *_item) {
+        unsafe { items.GetItemAt(i, &mut _item) };
+        match unsafe { get_ishellitem_path(&mut *_item) } {
             Ok(s) => item_names.push(s),
             Err(_) => {}
         }
     }
 
-    items.Release();
+    unsafe { items.Release() };
 
     Ok(item_names)
 }
@@ -659,13 +682,13 @@ unsafe fn get_ishellitem_path(item: &mut IShellItem) -> Result<OsString, NwgErro
     use winapi::um::shobjidl_core::SIGDN_FILESYSPATH;
 
     let mut item_path: PWSTR = ptr::null_mut();
-    if item.GetDisplayName(SIGDN_FILESYSPATH, &mut item_path) != S_OK {
+    if unsafe { item.GetDisplayName(SIGDN_FILESYSPATH, &mut item_path) } != S_OK {
         return Err(NwgError::file_dialog("Failed to get file name"));
     }
 
-    let text = os_string_from_wide_ptr(item_path, None);
+    let text = unsafe { os_string_from_wide_ptr(item_path, None) };
 
-    CoTaskMemFree(item_path as LPVOID);
+    unsafe { CoTaskMemFree(item_path as LPVOID) };
 
     Ok(text)
 }
@@ -675,7 +698,7 @@ pub unsafe fn file_dialog_options(dialog: &mut IFileDialog) -> Result<u32, NwgEr
     use winapi::shared::winerror::S_OK;
 
     let mut flags = 0;
-    if dialog.GetOptions(&mut flags) != S_OK {
+    if unsafe { dialog.GetOptions(&mut flags) } != S_OK {
         return Err(NwgError::file_dialog(
             "Failed to get the file dialog options",
         ));
@@ -692,13 +715,13 @@ pub unsafe fn toggle_dialog_flags(
 ) -> Result<(), NwgError> {
     use winapi::shared::winerror::S_OK;
 
-    let mut flags = file_dialog_options(dialog)?;
+    let mut flags = unsafe { file_dialog_options(dialog)? };
     flags = match enabled {
         true => flags | flag,
         false => flags & (!flag),
     };
 
-    if dialog.SetOptions(flags) != S_OK {
+    if unsafe { dialog.SetOptions(flags) } != S_OK {
         return Err(NwgError::file_dialog(
             "Failed to set the file dialog options",
         ));

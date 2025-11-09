@@ -206,7 +206,7 @@ impl FlexboxLayout {
         Panic:
         - The layout must have been successfully built otherwise this function will panic.
     */
-    pub fn children(&self) -> FlexboxLayoutChildren {
+    pub fn children(&self) -> FlexboxLayoutChildren<'_> {
         let inner = self.inner.borrow();
         if inner.base.is_null() {
             panic!("Flexbox layout is not yet initialized!");
@@ -224,7 +224,7 @@ impl FlexboxLayout {
         Panic:
         - The layout must have been successfully built otherwise this function will panic.
     */
-    pub fn children_mut(&self) -> FlexboxLayoutChildrenMut {
+    pub fn children_mut(&self) -> FlexboxLayoutChildrenMut<'_> {
         let inner = self.inner.borrow_mut();
         if inner.base.is_null() {
             panic!("Flexbox layout is not yet initialized!");
@@ -248,7 +248,7 @@ impl FlexboxLayout {
         if let Some(parent_layout) = &inner.parent_layout {
             parent_layout.fit()
         } else {
-            let (w, h) = unsafe { wh::get_window_size(inner.base) };
+            let (w, h) =  wh::get_window_size(inner.base) ;
             self.update_layout(w, h, (0, 0))
         }
     }
@@ -345,7 +345,7 @@ impl FlexboxLayout {
             let Size { width, height } = layout.size;
 
             match child {
-                Child::Item(child) => unsafe {
+                Child::Item(child) =>  {
                     wh::set_window_position(
                         child.control,
                         x as i32 + offset.0,
@@ -640,7 +640,7 @@ impl FlexboxLayoutBuilder {
             ));
         }
 
-        let (w, h) = unsafe { wh::get_window_size(self.layout.base) };
+        let (w, h) = wh::get_window_size(self.layout.base) ;
         let base_handle = ControlHandle::Hwnd(self.layout.base);
 
         // Auto compute size if enabled
@@ -721,7 +721,7 @@ impl FlexboxLayoutBuilder {
                 let size = l as u32;
                 let width = LOWORD(size) as i32;
                 let height = HIWORD(size) as i32;
-                let (w, h) = unsafe { crate::win32::high_dpi::physical_to_logical(width, height) };
+                let (w, h) =  crate::win32::high_dpi::physical_to_logical(width, height) ;
                 FlexboxLayout::update_layout(&event_layout, w as u32, h as u32, (0, 0))
                     .expect("Failed to compute layout!");
             }

@@ -70,12 +70,8 @@ impl ListviewDemoApp {
     fn init_list_view(&self) {
         let icons_small = &self.view_icons_small;
 
-        icons_small
-            .add_icon_from_filename("./listview-demo/res/cog.ico")
-            .unwrap();
-        icons_small
-            .add_icon_from_filename("./listview-demo/res/cog.ico")
-            .unwrap();
+        icons_small.add_icon_from_filename("./res/cog.ico").unwrap();
+        icons_small.add_icon_from_filename("./res/cog.ico").unwrap();
 
         let list = &self.list_view;
         for &column in &["姓名", "价格", "数量"] {
@@ -173,38 +169,38 @@ impl ListviewDemoApp {
             let price = self.price_input.text();
             let number = self.number_input.text();
             // 检测是否为空 name 为空
-            if !name.is_empty() {
-                if let Some(index) = list.selected_item() {
-                    let aindex = index as i32;
-                    let item: InsertListViewItem = InsertListViewItem {
-                        index: Some(aindex),
-                        column_index: 0,
-                        text: Some(name),
-                        image: None,
-                    };
-                    list.update_item(index, item);
+            if !name.is_empty()
+                && let Some(index) = list.selected_item()
+            {
+                let aindex = index as i32;
+                let item: InsertListViewItem = InsertListViewItem {
+                    index: Some(aindex),
+                    column_index: 0,
+                    text: Some(name),
+                    image: None,
+                };
+                list.update_item(index, item);
 
-                    let item: InsertListViewItem = InsertListViewItem {
-                        index: Some(aindex),
-                        column_index: 1,
-                        text: Some(price),
-                        image: None,
-                    };
-                    list.update_item(index, item);
+                let item: InsertListViewItem = InsertListViewItem {
+                    index: Some(aindex),
+                    column_index: 1,
+                    text: Some(price),
+                    image: None,
+                };
+                list.update_item(index, item);
 
-                    let item: InsertListViewItem = InsertListViewItem {
-                        index: Some(aindex),
-                        column_index: 2,
-                        text: Some(number),
-                        image: None,
-                    };
-                    list.update_item(index, item);
-                    // 清空下面框
-                    self.name_input.set_text("");
-                    self.price_input.set_text("");
-                    self.number_input.set_text("");
-                    self.add_button.set_text("添加");
-                }
+                let item: InsertListViewItem = InsertListViewItem {
+                    index: Some(aindex),
+                    column_index: 2,
+                    text: Some(number),
+                    image: None,
+                };
+                list.update_item(index, item);
+                // 清空下面框
+                self.name_input.set_text("");
+                self.price_input.set_text("");
+                self.number_input.set_text("");
+                self.add_button.set_text("添加");
             }
         }
     }

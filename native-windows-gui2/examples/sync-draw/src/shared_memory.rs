@@ -6,7 +6,7 @@ use winapi::um::handleapi::CloseHandle;
 use winapi::um::memoryapi::{FILE_MAP_ALL_ACCESS, MapViewOfFile, UnmapViewOfFile};
 use winapi::um::winnt::{HANDLE, WCHAR};
 
-const NAME: &'static str = "SyncDraw_Shared_Memory";
+const NAME: &str = "SyncDraw_Shared_Memory";
 const HEADER_SIZE: SIZE_T = mem::size_of::<SharedHeader>() as SIZE_T;
 const DATA_SIZE: SIZE_T = mem::size_of::<SharedData>() as SIZE_T;
 const MAX_TEXTURE_PIXELS: usize = 7000 * 4320;
@@ -95,12 +95,12 @@ impl SharedMemory {
                 SharedMemory::map_view(self.handle, 0, HEADER_SIZE) as *mut SharedHeader;
             let header = &mut *header_ptr;
 
-            match header.instances.iter_mut().find(|h| **h == id) {
-                Some(handle) => *handle = 0,
-                None => {}
+            if let Some(handle) = header.instances.iter_mut().find(|h| **h == id) {
+                *handle = 0
             }
 
-            drop(header);
+            // drop(header);
+            let _ = header;
 
             CloseHandle(self.handle);
         }
@@ -115,7 +115,7 @@ impl SharedMemory {
                 .instances
                 .iter()
                 .filter(|&&i| i != 0)
-                .map(|i| *i)
+                .copied()
                 .collect()
         };
 
@@ -237,10 +237,7 @@ impl SharedMemory {
         use std::ffi::OsStr;
         use std::os::windows::ffi::OsStrExt;
 
-        OsStr::new(NAME)
-            .encode_wide()
-            .chain(Some(0u16).into_iter())
-            .collect()
+        OsStr::new(NAME).encode_wide().chain(Some(0u16)).collect()
     }
 
     /// Safe wrapper over MapViewOfFile

@@ -1,7 +1,6 @@
 use proc_macro2 as pm2;
 use quote::ToTokens;
 use std::collections::HashMap;
-use syn;
 use syn::parse::{Parse, ParseBuffer, ParseStream};
 use syn::punctuated::Punctuated;
 
@@ -122,7 +121,7 @@ impl ControlEvents {
 
     pub fn add_top_level_handle(&mut self, field: &syn::Field) {
         let attrs = &field.attrs;
-        if attrs.len() == 0 {
+        if attrs.is_empty() {
             return;
         }
 
@@ -144,7 +143,7 @@ impl ControlEvents {
 
     pub fn parse(&mut self, field: &syn::Field) {
         let attrs = &field.attrs;
-        if attrs.len() == 0 {
+        if attrs.is_empty() {
             return;
         }
 
@@ -152,7 +151,7 @@ impl ControlEvents {
             .ident
             .as_ref()
             .expect("Cannot find member name when generating control");
-        let attr = match find_events_attr(&attrs) {
+        let attr = match find_events_attr(attrs) {
             Some(a) => a,
             None => {
                 return;
@@ -173,9 +172,9 @@ impl ControlEvents {
 
             for cb_fn in callback_def.callbacks.iter() {
                 let callback = EventCallback {
-                    member: Self::parse_member(&callback_def.field_name, &member),
+                    member: Self::parse_member(&callback_def.field_name, member),
                     path: cb_fn.path.clone(),
-                    args: map_callback_args(&member, &cb_fn.args, &self.callback_args_cache),
+                    args: map_callback_args(member, &cb_fn.args, &self.callback_args_cache),
                 };
 
                 evt_callbacks.push(callback);
@@ -262,7 +261,7 @@ impl<'a> ToTokens for EventCallbackCol<'a> {
                 let mut members_callbacks: HashMap<&syn::Expr, Vec<(&syn::Path, &Args)>> =
                     HashMap::new();
                 for c in cb.iter() {
-                    let mc = members_callbacks.entry(&c.member).or_insert(Vec::new());
+                    let mc = members_callbacks.entry(&c.member).or_default();
                     mc.push((&c.path, &c.args));
                 }
 
@@ -304,11 +303,11 @@ impl<'a> ToTokens for PathArgs<'a> {
 fn find_events_attr(attrs: &[syn::Attribute]) -> Option<&syn::Attribute> {
     let mut index = None;
     for (i, attr) in attrs.iter().enumerate() {
-        if let Some(ident) = attr.path.get_ident() {
-            if ident == "nwg_events" {
-                index = Some(i);
-                break;
-            }
+        if let Some(ident) = attr.path.get_ident()
+            && ident == "nwg_events"
+        {
+            index = Some(i);
+            break;
         }
     }
 
@@ -316,7 +315,7 @@ fn find_events_attr(attrs: &[syn::Attribute]) -> Option<&syn::Attribute> {
 }
 
 fn top_level_window(field: &syn::Field) -> bool {
-    static TOP_LEVEL: &'static [&'static str] = &["Window", "FancyWindow", "MessageWindow"];
+    static TOP_LEVEL: &[&str] = &["Window", "FancyWindow", "MessageWindow"];
 
     match &field.ty {
         syn::Type::Path(p) => {
@@ -342,7 +341,7 @@ fn map_callback_args(
 
     let values = ["SELF", "CTRL", "HANDLE", "EVT", "EVT_DATA", "RC_SELF"];
     for a in args.as_ref().unwrap().iter() {
-        let pos = values.iter().position(|v| &a == &v);
+        let pos = values.iter().position(|v| a == v);
         match pos {
             Some(0) | Some(5) => {
                 p.push(cache[&0].clone());

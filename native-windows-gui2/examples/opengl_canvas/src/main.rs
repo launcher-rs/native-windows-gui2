@@ -92,7 +92,7 @@ impl OpenGlCanvas {
             let vertex_data: &[f32] = &[
                 0.0, 1.0, 1.0, 1.0, 1.0, -1.0, -1.0, 1.0, 1.0, 1.0, 1.0, -1.0, 1.0, 1.0, 1.0,
             ];
-            let vertex_size = vertex_data.len() * mem::size_of::<f32>();
+            let vertex_size = std::mem::size_of_val(vertex_data);
 
             let mut vb = mem::zeroed();
             gl::GenBuffers(1, &mut vb);
@@ -206,15 +206,13 @@ impl ExternCanvas {
     }
 
     pub fn select_tri_color(&self) {
-        use std::mem;
-
         if self.color_dialog.run(Some(&self.window)) {
             let [r, g, b] = self.color_dialog.color();
             let [r, g, b] = [r as f32 / 225.0, g as f32 / 225.0, b as f32 / 225.0];
 
             let vertex_data: &[f32] = &[0.0, 1.0, r, g, b, -1.0, -1.0, r, g, b, 1.0, -1.0, r, g, b];
 
-            let vertex_size = vertex_data.len() * mem::size_of::<f32>();
+            let vertex_size = std::mem::size_of_val(vertex_data);
 
             unsafe {
                 gl::BufferSubData(
@@ -285,24 +283,24 @@ mod extern_canvas_ui {
                     if let Some(evt_ui) = evt_ui.upgrade() {
                         match evt {
                             E::OnResize => {
-                                if &handle == &evt_ui.canvas {
+                                if handle == evt_ui.canvas {
                                     ExternCanvas::resize_canvas(&evt_ui);
                                 }
                             }
                             E::OnButtonClick => {
-                                if &handle == &evt_ui.choose_color_btn1 {
+                                if handle == evt_ui.choose_color_btn1 {
                                     ExternCanvas::select_bg_color(&evt_ui);
-                                } else if &handle == &evt_ui.choose_color_btn2 {
+                                } else if handle == evt_ui.choose_color_btn2 {
                                     ExternCanvas::select_tri_color(&evt_ui);
                                 }
                             }
                             E::OnWindowClose => {
-                                if &handle == &evt_ui.window {
+                                if handle == evt_ui.window {
                                     ExternCanvas::exit(&evt_ui);
                                 }
                             }
                             E::OnInit => {
-                                if &handle == &evt_ui.window {
+                                if handle == evt_ui.window {
                                     ExternCanvas::show(&evt_ui);
                                 }
                             }
@@ -326,7 +324,7 @@ mod extern_canvas_ui {
                 .child(3, 1, &ui.choose_color_btn2)
                 .build(&ui.layout)?;
 
-            return Ok(ui);
+            Ok(ui)
         }
     }
 
@@ -365,7 +363,7 @@ pub fn main() {
     });
 }
 
-const VS_SRC: &'static [u8] = b"#version 330
+const VS_SRC: &[u8] = b"#version 330
 layout (location=0) in vec2 a_position;
 layout (location=1) in vec4 a_color;
 
@@ -377,7 +375,7 @@ void main() {
 }
 \0";
 
-const FS_SRC: &'static [u8] = b"#version 330
+const FS_SRC: &[u8] = b"#version 330
 precision mediump float;
 
 in vec4 color;

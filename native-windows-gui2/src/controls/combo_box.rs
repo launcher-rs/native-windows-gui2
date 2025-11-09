@@ -313,85 +313,85 @@ impl<D: Display + Default> ComboBox<D> {
     /// Set the font of the control
     pub fn set_font(&self, font: Option<&Font>) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-        unsafe {
+
             wh::set_window_font(handle, font.map(|f| f.handle), true);
-        }
+
     }
 
     /// Return true if the control currently has the keyboard focus
     pub fn focus(&self) -> bool {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-        unsafe { wh::get_focus(handle) }
+         wh::get_focus(handle)
     }
 
     /// Set the keyboard focus on the button.
     pub fn set_focus(&self) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-        unsafe {
+
             wh::set_focus(handle);
-        }
+
     }
 
     /// Return true if the control user can interact with the control, return false otherwise
     pub fn enabled(&self) -> bool {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-        unsafe { wh::get_window_enabled(handle) }
+         wh::get_window_enabled(handle)
     }
 
     /// Enable or disable the control
     pub fn set_enabled(&self, v: bool) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-        unsafe { wh::set_window_enabled(handle, v) }
+         wh::set_window_enabled(handle, v)
     }
 
     /// Return true if the control is visible to the user. Will return true even if the
     /// control is outside of the parent client view (ex: at the position (10000, 10000))
     pub fn visible(&self) -> bool {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-        unsafe { wh::get_window_visibility(handle) }
+         wh::get_window_visibility(handle)
     }
 
     /// Show or hide the control to the user
     pub fn set_visible(&self, v: bool) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-        unsafe { wh::set_window_visibility(handle, v) }
+        wh::set_window_visibility(handle, v)
     }
 
     /// Return the size of the button in the parent window
     pub fn size(&self) -> (u32, u32) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-        unsafe { wh::get_window_size(handle) }
+         wh::get_window_size(handle)
     }
 
     /// Set the size of the button in the parent window
     pub fn set_size(&self, x: u32, y: u32) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-        unsafe { wh::set_window_size(handle, x, y, false) }
+        wh::set_window_size(handle, x, y, false)
     }
 
     /// Return the position of the button in the parent window
     pub fn position(&self) -> (i32, i32) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-        unsafe { wh::get_window_position(handle) }
+         wh::get_window_position(handle)
     }
 
     /// Set the position of the button in the parent window
     pub fn set_position(&self, x: i32, y: i32) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-        unsafe { wh::set_window_position(handle, x, y) }
+         wh::set_window_position(handle, x, y)
     }
 
     /// Get read-only access to the inner collection of the combobox
     /// This call refcell.borrow under the hood. Be sure to drop the value before
     /// calling other combobox methods
-    pub fn collection(&self) -> Ref<Vec<D>> {
+    pub fn collection(&self) -> Ref<'_,Vec<D>> {
         self.collection.borrow()
     }
 
     /// Get mutable access to the inner collection of the combobox. Does not update the visual
     /// control. Call `sync` to update the view. This call refcell.borrow_mut under the hood.
     /// Be sure to drop the value before calling other combobox methods
-    pub fn collection_mut(&self) -> RefMut<Vec<D>> {
+    pub fn collection_mut(&self) -> RefMut<'_,Vec<D>> {
         self.collection.borrow_mut()
     }
 

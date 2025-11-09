@@ -191,16 +191,16 @@ impl Font {
 
         let mut families = Vec::with_capacity(16);
 
-        unsafe extern "system" fn callback(
+        extern "system" fn callback(
             font_ptr: *const LOGFONTW,
             _txt: *const TEXTMETRICW,
             _font_type: DWORD,
             lparam: LPARAM,
         ) -> i32 {
             let families_ptr = lparam as *mut Vec<String>;
-            let families = &mut *families_ptr;
+            let families = unsafe { &mut *families_ptr };
 
-            let font = &*font_ptr;
+            let font = &unsafe { *font_ptr };
             let family_text = from_utf16(&font.lfFaceName);
             if !families.iter().any(|f| f == &family_text) {
                 families.push(family_text);
@@ -281,14 +281,12 @@ impl<'a> FontBuilder<'a> {
     }
 
     pub fn build(self, font: &mut Font) -> Result<(), NwgError> {
-        font.handle = unsafe {
-            rh::build_font(
-                self.size.unwrap_or(0),
-                self.weight,
-                [false, false, false],
-                self.family,
-            )
-        }?;
+        font.handle = rh::build_font(
+            self.size.unwrap_or(0),
+            self.weight,
+            [false, false, false],
+            self.family,
+        )?;
 
         Ok(())
     }

@@ -5,26 +5,21 @@ Warning. Not for the faint of heart.
 */
 use super::base_helper::{CUSTOM_ID_BEGIN, cwstr_to_str, to_utf16};
 use super::high_dpi;
-use super::window_helper::{
-    NOTICE_MESSAGE, NWG_INIT, NWG_TIMER_STOP, NWG_TIMER_TICK, NWG_TRAY, send_message,
-};
+use super::window_helper::{NOTICE_MESSAGE, NWG_INIT, NWG_TIMER_STOP, NWG_TIMER_TICK, NWG_TRAY};
 use crate::controls::ControlHandle;
 use crate::{Event, EventData, NwgError};
-use std::ffi::{CStr, CString, OsString, c_char, c_void};
+use std::ffi::OsString;
 use std::os::windows::prelude::OsStringExt;
 use std::rc::Rc;
 use std::sync::atomic::{AtomicU32, AtomicUsize, Ordering};
 use std::{mem, ptr};
 use winapi::shared::basetsd::{DWORD_PTR, UINT_PTR};
-use winapi::shared::minwindef::{
-    BOOL, DWORD, HMODULE, LPARAM, LPVOID, LRESULT, TRUE, UINT, WPARAM,
-};
+use winapi::shared::minwindef::{BOOL, DWORD, HMODULE, LPARAM, LRESULT, UINT, WPARAM};
 use winapi::shared::windef::{HBRUSH, HMENU, HWND};
-use winapi::um::commctrl::{InitCommonControls, NMTTDISPINFOW, SUBCLASSPROC};
+use winapi::um::commctrl::{NMTTDISPINFOW, SUBCLASSPROC};
 use winapi::um::winuser::{
     HCF_HIGHCONTRASTON, HIGHCONTRASTW, IDCANCEL, IDOK, MAKEINTRESOURCEA, NMHDR,
-    SPI_GETHIGHCONTRAST, SetPropW, SystemParametersInfoW, WM_SETTINGCHANGE, WM_THEMECHANGED,
-    WNDPROC,
+    SPI_GETHIGHCONTRAST, SystemParametersInfoW, WM_SETTINGCHANGE, WNDPROC,
 };
 
 static TIMER_ID: AtomicU32 = AtomicU32::new(1);
@@ -70,7 +65,7 @@ pub unsafe fn build_timer(parent: HWND, interval: u32, stopped: bool) -> Control
     let id = TIMER_ID.fetch_add(1, Ordering::SeqCst);
 
     if !stopped {
-        SetTimer(parent, id as UINT_PTR, interval as UINT, None);
+        unsafe { SetTimer(parent, id as UINT_PTR, interval as UINT, None) };
     }
 
     ControlHandle::Timer(parent, id)
@@ -100,9 +95,9 @@ where
     */
     unsafe extern "system" fn set_children_subclass(h: HWND, p: LPARAM) -> i32 {
         let params_ptr = p as *mut SetSubclassParam;
-        let params = &*params_ptr;
+        let params = unsafe { &*params_ptr };
 
-        let cb: Rc<Callback> = Rc::from_raw(*params.callback_ptr);
+        let cb: Rc<Callback> = unsafe { Rc::from_raw(*params.callback_ptr) };
 
         // Simply increase the rc count because the callback
         // will also be stored into the current children window.
@@ -125,7 +120,7 @@ where
     */
     unsafe extern "system" fn handler_children(h: HWND, p: LPARAM) -> i32 {
         let handles_ptr: *mut Vec<HWND> = p as *mut Vec<HWND>;
-        let handles = &mut *handles_ptr;
+        let handles = unsafe { &mut *handles_ptr };
         handles.push(h);
         1
     }
@@ -162,7 +157,7 @@ where
         );
         EnumChildWindows(hwnd, Some(set_children_subclass), params_ptr as LPARAM);
         SetWindowSubclass(hwnd, callback_fn, subclass_id, callback_ptr as UINT_PTR);
-        Box::from_raw(params_ptr);
+        let _= Box::from_raw(params_ptr);
     }
 
     handler
@@ -212,15 +207,13 @@ where
         subclass_id,
     };
 
-    unsafe {
-        SetWindowSubclass(hwnd, callback_fn, subclass_id, callback_ptr as UINT_PTR);
-        SetWindowSubclass(
-            parent_hwnd,
-            callback_fn,
-            subclass_id,
-            callback_ptr_parent as UINT_PTR,
-        );
-    }
+    SetWindowSubclass(hwnd, callback_fn, subclass_id, callback_ptr as UINT_PTR);
+    SetWindowSubclass(
+        parent_hwnd,
+        callback_fn,
+        subclass_id,
+        callback_ptr_parent as UINT_PTR,
+    );
 
     handler
 }
@@ -256,7 +249,7 @@ pub fn unbind_event_handler(handler: &EventHandler) {
 
     // Finally free the pointer to the pointer to the callback
     unsafe {
-        Box::from_raw(callback_ptr);
+        let _ = Box::from_raw(callback_ptr);
     }
 }
 
@@ -272,7 +265,7 @@ where
     let subclass_proc: SUBCLASSPROC = Some(process_raw_events);
 
     let handle = match handle {
-        &ControlHandle::Hwnd(h) => unsafe {
+        &ControlHandle::Hwnd(h) => {
             // Check if the handler is already bound to the control
             let mut tmp_value = 0;
             let result = GetWindowSubclass(h, subclass_proc, handler_id, &mut tmp_value);
@@ -290,7 +283,7 @@ where
             SetWindowSubclass(h, subclass_proc, handler_id, proc_data as UINT_PTR);
 
             h
-        },
+        }
         htype => panic!("Cannot bind control with an handle of type {:?}.", htype),
     };
 
@@ -359,7 +352,7 @@ pub fn has_raw_handler(handle: &ControlHandle, handler_id: UINT_PTR) -> bool {
         .expect("This type of control cannot have a raw handler.");
     let subclass_proc: SUBCLASSPROC = Some(process_raw_events);
     let mut tmp_value = 0;
-    unsafe { GetWindowSubclass(handle, subclass_proc, handler_id, &mut tmp_value) != 0 }
+    GetWindowSubclass(handle, subclass_proc, handler_id, &mut tmp_value) != 0
 }
 
 /**
@@ -401,15 +394,18 @@ pub fn unbind_raw_event_handler(handler: &RawEventHandler) -> Result<(), NwgErro
 }
 
 unsafe fn is_dark_mode_active() -> bool {
-    type FnIsDarkModeAllowedForWindow = extern "stdcall" fn(hwnd: HWND) -> bool;
-    type FnShouldAppsUseDarkMode = extern "stdcall" fn() -> bool;
-    type FnIsHighContrast = extern "stdcall" fn() -> bool;
 
-    let h_uxtheme = LoadLibraryExW(
-        to_utf16("uxtheme.dll").as_ptr(),
-        0 as HANDLE,
-        LOAD_LIBRARY_SEARCH_SYSTEM32,
-    );
+    // type FnIsDarkModeAllowedForWindow = extern "system" fn(hwnd: HWND) -> bool;
+    type FnShouldAppsUseDarkMode = extern "system" fn() -> bool;
+    // type FnIsHighContrast = extern "system" fn() -> bool;
+
+    let h_uxtheme = unsafe {
+        LoadLibraryExW(
+            to_utf16("uxtheme.dll").as_ptr(),
+            0 as HANDLE,
+            LOAD_LIBRARY_SEARCH_SYSTEM32,
+        )
+    };
 
     if h_uxtheme.is_null() {
         println!("Failed to load uxtheme.dll");
@@ -417,24 +413,26 @@ unsafe fn is_dark_mode_active() -> bool {
     }
 
     let should_apps_use_dark_mode: FnShouldAppsUseDarkMode =
-        mem::transmute(GetProcAddress(h_uxtheme, MAKEINTRESOURCEA(132)));
+        unsafe { mem::transmute(GetProcAddress(h_uxtheme, MAKEINTRESOURCEA(132))) };
 
     let mut is_high_contrast = false;
     let mut high_contrast = HIGHCONTRASTW::default();
     high_contrast.cbSize = size_of::<HIGHCONTRASTW>() as UINT;
 
-    if SystemParametersInfoW(
-        SPI_GETHIGHCONTRAST,
-        high_contrast.cbSize,
-        &mut high_contrast as *mut _ as *mut winapi::ctypes::c_void,
-        0,
-    ) != 0
+    if unsafe {
+        SystemParametersInfoW(
+            SPI_GETHIGHCONTRAST,
+            high_contrast.cbSize,
+            &mut high_contrast as *mut _ as *mut winapi::ctypes::c_void,
+            0,
+        )
+    } != 0
     {
         is_high_contrast = (high_contrast.dwFlags & HCF_HIGHCONTRASTON) != 0;
     }
 
     let result = should_apps_use_dark_mode() && !is_high_contrast;
-    FreeLibrary(h_uxtheme);
+    unsafe { FreeLibrary(h_uxtheme) };
     result
 }
 
@@ -446,14 +444,16 @@ unsafe fn is_dark_mode_active() -> bool {
 /// * `hwnd`: Handle to a top-level window.
 ///
 /// returns: Result<(), String>
-unsafe fn update_dark_mode_for_window(hwnd: HWND) -> Result<(), String> {
-    let value: BOOL = is_dark_mode_active() as BOOL;
-    let result: HRESULT = winapi::um::dwmapi::DwmSetWindowAttribute(
-        hwnd,
-        20,
-        &value as *const BOOL as *const _,
-        size_of::<BOOL>() as _,
-    );
+fn update_dark_mode_for_window(hwnd: HWND) -> Result<(), String> {
+    let value: BOOL = unsafe { is_dark_mode_active() as BOOL };
+    let result: HRESULT = unsafe {
+        winapi::um::dwmapi::DwmSetWindowAttribute(
+            hwnd,
+            20,
+            &value as *const BOOL as *const _,
+            size_of::<BOOL>() as _,
+        )
+    };
 
     if result != 0 {
         return Err("DwmSetWindowAttribute failed".to_string());
@@ -465,7 +465,7 @@ unsafe fn update_dark_mode_for_window(hwnd: HWND) -> Result<(), String> {
 /**
     High level function that handle the creation of custom window control or built in window control
 */
-pub(crate) unsafe fn build_hwnd_control<'a>(
+pub(crate) fn build_hwnd_control<'a>(
     class_name: &'a str,
     window_title: Option<&'a str>,
     size: Option<(i32, i32)>,
@@ -483,7 +483,7 @@ pub(crate) unsafe fn build_hwnd_control<'a>(
         WS_OVERLAPPEDWINDOW, WS_VISIBLE,
     };
 
-    let hmod = GetModuleHandleW(ptr::null_mut());
+    let hmod = unsafe { GetModuleHandleW(ptr::null_mut()) };
     if hmod.is_null() {
         return Err(NwgError::initialization("GetModuleHandleW failed"));
     }
@@ -508,26 +508,28 @@ pub(crate) unsafe fn build_hwnd_control<'a>(
             right: sx,
             bottom: sy,
         };
-        AdjustWindowRectEx(&mut rect, flags, 0, ex_flags);
+        unsafe { AdjustWindowRectEx(&mut rect, flags, 0, ex_flags) };
 
         sx = rect.right - rect.left;
         sy = rect.bottom - rect.top;
     }
 
-    let handle = CreateWindowExW(
-        ex_flags,
-        class_name.as_ptr(),
-        window_title.as_ptr(),
-        flags,
-        px,
-        py,
-        sx,
-        sy,
-        parent_handle,
-        menu,
-        hmod,
-        lp_params,
-    );
+    let handle = unsafe {
+        CreateWindowExW(
+            ex_flags,
+            class_name.as_ptr(),
+            window_title.as_ptr(),
+            flags,
+            px,
+            py,
+            sx,
+            sy,
+            parent_handle,
+            menu,
+            hmod,
+            lp_params,
+        )
+    };
 
     if handle.is_null() {
         Err(NwgError::initialization("Window creation failed"))
@@ -536,7 +538,7 @@ pub(crate) unsafe fn build_hwnd_control<'a>(
     }
 }
 
-pub(crate) unsafe fn build_sysclass<'a>(
+pub(crate) fn build_sysclass<'a>(
     hmod: HMODULE,
     class_name: &'a str,
     clsproc: WNDPROC,
@@ -552,23 +554,25 @@ pub(crate) unsafe fn build_sysclass<'a>(
     let background: HBRUSH = background.unwrap_or(COLOR_WINDOW as usize as HBRUSH);
     let style: UINT = style.unwrap_or(CS_HREDRAW | CS_VREDRAW);
 
-    let class = WNDCLASSEXW {
-        cbSize: mem::size_of::<WNDCLASSEXW>() as UINT,
-        style,
-        lpfnWndProc: clsproc,
-        cbClsExtra: 0,
-        cbWndExtra: 0,
-        hInstance: hmod,
-        hIcon: ptr::null_mut(),
-        hCursor: LoadCursorW(ptr::null_mut(), IDC_ARROW),
-        hbrBackground: background,
-        lpszMenuName: ptr::null(),
-        lpszClassName: class_name.as_ptr(),
-        hIconSm: ptr::null_mut(),
+    let class = unsafe {
+        WNDCLASSEXW {
+            cbSize: mem::size_of::<WNDCLASSEXW>() as UINT,
+            style,
+            lpfnWndProc: clsproc,
+            cbClsExtra: 0,
+            cbWndExtra: 0,
+            hInstance: hmod,
+            hIcon: ptr::null_mut(),
+            hCursor: LoadCursorW(ptr::null_mut(), IDC_ARROW),
+            hbrBackground: background,
+            lpszMenuName: ptr::null(),
+            lpszClassName: class_name.as_ptr(),
+            hIconSm: ptr::null_mut(),
+        }
     };
 
-    let class_token = RegisterClassExW(&class);
-    if class_token == 0 && GetLastError() != ERROR_CLASS_ALREADY_EXISTS {
+    let class_token = unsafe { RegisterClassExW(&class) };
+    if class_token == 0 && unsafe { GetLastError() } != ERROR_CLASS_ALREADY_EXISTS {
         Err(NwgError::initialization("System class creation failed"))
     } else {
         Ok(())
@@ -658,22 +662,17 @@ pub(crate) fn create_message_window() -> Result<ControlHandle, NwgError> {
 /**
     A blank system procedure used when creating new window class. Actual system event handling is done in the subclass procedure `process_events`.
 */
-unsafe extern "system" fn blank_window_proc(
-    hwnd: HWND,
-    msg: UINT,
-    w: WPARAM,
-    l: LPARAM,
-) -> LRESULT {
+extern "system" fn blank_window_proc(hwnd: HWND, msg: UINT, w: WPARAM, l: LPARAM) -> LRESULT {
     use winapi::um::winuser::{DefWindowProcW, PostMessageW, ShowWindow};
     use winapi::um::winuser::{SW_HIDE, WM_CLOSE, WM_CREATE};
 
     let handled = match msg {
         WM_CREATE => {
-            PostMessageW(hwnd, NWG_INIT, 0, 0);
+            unsafe { PostMessageW(hwnd, NWG_INIT, 0, 0) };
             true
         }
         WM_CLOSE => {
-            ShowWindow(hwnd, SW_HIDE);
+            unsafe { ShowWindow(hwnd, SW_HIDE) };
             true
         }
         _ => false,
@@ -682,7 +681,7 @@ unsafe extern "system" fn blank_window_proc(
     if handled {
         0
     } else {
-        DefWindowProcW(hwnd, msg, w, l)
+        unsafe { DefWindowProcW(hwnd, msg, w, l) }
     }
 }
 
@@ -690,7 +689,7 @@ unsafe extern "system" fn blank_window_proc(
     A window subclass procedure that dispatch the windows control events to the associated application control
 */
 #[allow(unused_variables)]
-unsafe extern "system" fn process_events(
+extern "system" fn process_events(
     hwnd: HWND,
     msg: UINT,
     w: WPARAM,
@@ -718,8 +717,8 @@ unsafe extern "system" fn process_events(
     use winapi::um::winuser::{GetClassNameW, GetMenuItemID, GetSubMenu};
 
     let callback_ptr = data as *mut *const Callback;
-    Rc::increment_strong_count(*callback_ptr);
-    let callback = Rc::from_raw(*callback_ptr);
+    unsafe { Rc::increment_strong_count(*callback_ptr) };
+    let callback = unsafe { Rc::from_raw(*callback_ptr) };
     let callback = &*callback;
 
     let base_handle = ControlHandle::Hwnd(hwnd);
@@ -747,7 +746,7 @@ unsafe extern "system" fn process_events(
         WM_NOTIFY => {
             let code = {
                 let notif_ptr = l as *mut NMHDR;
-                (&*notif_ptr).code
+                unsafe { (&*notif_ptr).code }
             };
 
             match code {
@@ -757,7 +756,7 @@ unsafe extern "system" fn process_events(
         }
         WM_MENUCOMMAND => {
             let parent_handle = l as HMENU;
-            let item_id = GetMenuItemID(parent_handle, w as i32);
+            let item_id = unsafe { GetMenuItemID(parent_handle, w as i32) };
             let handle = ControlHandle::MenuItem(parent_handle, item_id);
             callback(Event::OnMenuItemSelected, NO_DATA, handle);
         }
@@ -797,7 +796,7 @@ unsafe extern "system" fn process_events(
                 callback(
                     Event::OnMenuHover,
                     NO_DATA,
-                    ControlHandle::Menu(parent, GetSubMenu(parent, index as i32)),
+                    ControlHandle::Menu(parent, unsafe { GetSubMenu(parent, index as i32) }),
                 );
             } else {
                 // Item is a menu item
@@ -816,7 +815,8 @@ unsafe extern "system" fn process_events(
             // Converting the class name into rust string might not be the most efficient way to do this
             // It might be a good idea to just compare the class_name_raw
             let mut class_name_raw: [WCHAR; 100] = [0; 100];
-            let count = GetClassNameW(child_handle, class_name_raw.as_mut_ptr(), 100) as usize;
+            let count =
+                unsafe { GetClassNameW(child_handle, class_name_raw.as_mut_ptr(), 100) as usize };
             let class_name = OsString::from_wide(&class_name_raw[..count])
                 .into_string()
                 .unwrap_or("".to_string());
@@ -985,14 +985,14 @@ unsafe extern "system" fn process_events(
         _ => {}
     }
 
-    DefSubclassProc(hwnd, msg, w, l)
+    unsafe { DefSubclassProc(hwnd, msg, w, l) }
 }
 
 /**
     A window subclass procedure that dispatch the windows control events to the associated application control
 */
 #[allow(unused_variables)]
-unsafe extern "system" fn process_raw_events(
+extern "system" fn process_raw_events(
     hwnd: HWND,
     msg: UINT,
     w: WPARAM,
@@ -1001,14 +1001,14 @@ unsafe extern "system" fn process_raw_events(
     data: DWORD_PTR,
 ) -> LRESULT {
     let callback_wrapper_ptr = data as *mut *mut RawCallback;
-    let callback: Box<RawCallback> = Box::from_raw(*callback_wrapper_ptr);
+    let callback: Box<RawCallback> = unsafe { Box::from_raw(*callback_wrapper_ptr) };
 
     let result = callback(hwnd, msg, w, l);
-    Box::into_raw(callback);
+    let _ = Box::into_raw(callback);
 
     match result {
         Some(r) => r,
-        None => ::winapi::um::commctrl::DefSubclassProc(hwnd, msg, w, l),
+        None => unsafe { ::winapi::um::commctrl::DefSubclassProc(hwnd, msg, w, l) },
     }
 }
 
@@ -1173,7 +1173,7 @@ fn tree_data(m: u32, notif_raw: *const NMHDR) -> EventData {
             let data = unsafe { &*(notif_raw as *const NMTVDISPINFOW) };
             let new_psztext = data.item.pszText;
             if !new_psztext.is_null() {
-                let new_text_osstr = unsafe { u16_ptr_to_string(new_psztext) };
+                let new_text_osstr = u16_ptr_to_string(new_psztext);
                 if let Ok(new_text) = new_text_osstr.into_string() {
                     EventData::OnTreeViewEndItemEdit {
                         f_cancel: false,
@@ -1196,9 +1196,11 @@ fn tree_data(m: u32, notif_raw: *const NMHDR) -> EventData {
     }
 }
 
-unsafe fn u16_ptr_to_string(ptr: *const u16) -> OsString {
-    let len = (0..).take_while(|&i| *ptr.offset(i) != 0).count();
-    let slice = std::slice::from_raw_parts(ptr, len);
+fn u16_ptr_to_string(ptr: *const u16) -> OsString {
+    let len = (0..)
+        .take_while(|&i| unsafe { *ptr.offset(i) } != 0)
+        .count();
+    let slice = unsafe { std::slice::from_raw_parts(ptr, len) };
 
     OsString::from_wide(slice)
 }
@@ -1249,15 +1251,15 @@ fn list_view_data(_m: u32, _notif_raw: *const NMHDR) -> EventData {
     NO_DATA
 }
 
-unsafe fn static_commands(handle: HWND, m: u16) -> Event {
+fn static_commands(handle: HWND, m: u16) -> Event {
     use winapi::um::winuser::SendMessageW;
     use winapi::um::winuser::{
         IMAGE_BITMAP, IMAGE_CURSOR, IMAGE_ICON, STM_GETIMAGE, STN_CLICKED, STN_DBLCLK,
     };
 
-    let has_image = SendMessageW(handle, STM_GETIMAGE, IMAGE_BITMAP as usize, 0) != 0;
-    let has_icon = SendMessageW(handle, STM_GETIMAGE, IMAGE_ICON as usize, 0) != 0;
-    let has_cursor = SendMessageW(handle, STM_GETIMAGE, IMAGE_CURSOR as usize, 0) != 0;
+    let has_image = unsafe { SendMessageW(handle, STM_GETIMAGE, IMAGE_BITMAP as usize, 0) } != 0;
+    let has_icon = unsafe { SendMessageW(handle, STM_GETIMAGE, IMAGE_ICON as usize, 0) } != 0;
+    let has_cursor = unsafe { SendMessageW(handle, STM_GETIMAGE, IMAGE_CURSOR as usize, 0) } != 0;
 
     if has_image | has_icon | has_cursor {
         match m {
@@ -1274,7 +1276,7 @@ unsafe fn static_commands(handle: HWND, m: u16) -> Event {
     }
 }
 
-unsafe fn listbox_commands(m: u16) -> Event {
+fn listbox_commands(m: u16) -> Event {
     use winapi::um::winuser::{LBN_DBLCLK, LBN_SELCHANGE};
 
     match m {
@@ -1284,24 +1286,24 @@ unsafe fn listbox_commands(m: u16) -> Event {
     }
 }
 
-unsafe fn handle_tooltip_callback<'a>(notif: *mut NMTTDISPINFOW, callback: &Callback) {
+fn handle_tooltip_callback<'a>(notif: *mut NMTTDISPINFOW, callback: &Callback) {
     use crate::events::ToolTipTextData;
 
-    let notif = &mut *notif;
+    let notif = unsafe { &mut *notif };
     let handle = ControlHandle::Hwnd(notif.hdr.idFrom as HWND);
     let data = EventData::OnTooltipText(ToolTipTextData { data: notif });
     callback(Event::OnTooltipText, data, handle);
 }
 
-unsafe fn handle_default_notify_callback<'a>(notif_raw: *const NMHDR, callback: &Callback) {
+fn handle_default_notify_callback<'a>(notif_raw: *const NMHDR, callback: &Callback) {
     use winapi::um::winnt::WCHAR;
     use winapi::um::winuser::GetClassNameW;
 
-    let notif = &*notif_raw;
+    let notif = unsafe { &*notif_raw };
     let handle = ControlHandle::Hwnd(notif.hwndFrom);
 
-    let mut class_name_raw: [WCHAR; 100] = mem::zeroed();
-    let count = GetClassNameW(notif.hwndFrom, class_name_raw.as_mut_ptr(), 100) as usize;
+    let mut class_name_raw: [WCHAR; 100] = unsafe { mem::zeroed() };
+    let count = unsafe { GetClassNameW(notif.hwndFrom, class_name_raw.as_mut_ptr(), 100) as usize };
     let class_name = OsString::from_wide(&class_name_raw[..count])
         .into_string()
         .unwrap_or("".to_string());
@@ -1324,12 +1326,12 @@ unsafe fn handle_default_notify_callback<'a>(notif_raw: *const NMHDR, callback: 
     }
 }
 
-unsafe fn is_textbox_control(hwnd: HWND) -> bool {
+fn is_textbox_control(hwnd: HWND) -> bool {
     use winapi::um::winnt::WCHAR;
     use winapi::um::winuser::GetClassNameW;
 
     let mut class_name_raw: [WCHAR; 100] = [0; 100];
-    let count = GetClassNameW(hwnd, class_name_raw.as_mut_ptr(), 100) as usize;
+    let count = unsafe { GetClassNameW(hwnd, class_name_raw.as_mut_ptr(), 100) as usize };
     let class_name = OsString::from_wide(&class_name_raw[..count])
         .into_string()
         .unwrap_or("".to_string());
@@ -1341,15 +1343,13 @@ unsafe fn is_textbox_control(hwnd: HWND) -> bool {
 // Hack to make `GetWindowSubclass` work on GNU
 //
 
-use std::ptr::null;
 #[cfg(target_env = "gnu")]
 use std::{collections::HashMap, sync::Mutex};
-use winapi::ctypes::wchar_t;
 use winapi::shared::winerror::HRESULT;
 use winapi::um::libloaderapi::{
     FreeLibrary, GetProcAddress, LOAD_LIBRARY_SEARCH_SYSTEM32, LoadLibraryExW,
 };
-use winapi::um::winnt::{CHAR, HANDLE, LPWSTR, VOID};
+use winapi::um::winnt::HANDLE;
 
 #[cfg(target_env = "gnu")]
 type SubclassId = (usize, usize, UINT_PTR);
@@ -1449,31 +1449,28 @@ unsafe fn RemoveWindowSubclass(hwnd: HWND, proc: SUBCLASSPROC, uid: UINT_PTR) ->
 
 #[cfg(not(target_env = "gnu"))]
 #[allow(non_snake_case)]
-unsafe fn GetWindowSubclass(
-    hwnd: HWND,
-    proc: SUBCLASSPROC,
-    uid: UINT_PTR,
-    data: *mut DWORD_PTR,
-) -> BOOL {
-    use winapi::um::commctrl::GetWindowSubclass;
-    GetWindowSubclass(hwnd, proc, uid, data)
+fn GetWindowSubclass(hwnd: HWND, proc: SUBCLASSPROC, uid: UINT_PTR, data: *mut DWORD_PTR) -> BOOL {
+    unsafe {
+        use winapi::um::commctrl::GetWindowSubclass;
+
+        GetWindowSubclass(hwnd, proc, uid, data)
+    }
 }
 
 #[cfg(not(target_env = "gnu"))]
 #[allow(non_snake_case)]
-unsafe fn SetWindowSubclass(
-    hwnd: HWND,
-    proc: SUBCLASSPROC,
-    uid: UINT_PTR,
-    data: DWORD_PTR,
-) -> BOOL {
-    use winapi::um::commctrl::SetWindowSubclass;
-    SetWindowSubclass(hwnd, proc, uid, data)
+fn SetWindowSubclass(hwnd: HWND, proc: SUBCLASSPROC, uid: UINT_PTR, data: DWORD_PTR) -> BOOL {
+    unsafe {
+        use winapi::um::commctrl::SetWindowSubclass;
+        SetWindowSubclass(hwnd, proc, uid, data)
+    }
 }
 
 #[cfg(not(target_env = "gnu"))]
 #[allow(non_snake_case)]
-unsafe fn RemoveWindowSubclass(hwnd: HWND, proc: SUBCLASSPROC, uid: UINT_PTR) -> BOOL {
-    use winapi::um::commctrl::RemoveWindowSubclass;
-    RemoveWindowSubclass(hwnd, proc, uid)
+fn RemoveWindowSubclass(hwnd: HWND, proc: SUBCLASSPROC, uid: UINT_PTR) -> BOOL {
+    unsafe {
+        use winapi::um::commctrl::RemoveWindowSubclass;
+        RemoveWindowSubclass(hwnd, proc, uid)
+    }
 }

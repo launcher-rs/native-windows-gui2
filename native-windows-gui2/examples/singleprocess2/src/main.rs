@@ -51,14 +51,11 @@ impl BasicApp {
     }
 }
 
-pub fn to_utf16<'a>(s: &'a str) -> Vec<u16> {
+pub fn to_utf16(s: &str) -> Vec<u16> {
     use std::ffi::OsStr;
     use std::os::windows::ffi::OsStrExt;
 
-    OsStr::new(s)
-        .encode_wide()
-        .chain(Some(0u16).into_iter())
-        .collect()
+    OsStr::new(s).encode_wide().chain(Some(0u16)).collect()
 }
 
 unsafe extern "system" fn enum_wnd_proc(hwnd: HWND, lparam: LPARAM) -> BOOL {
@@ -69,7 +66,7 @@ unsafe extern "system" fn enum_wnd_proc(hwnd: HWND, lparam: LPARAM) -> BOOL {
         *(lparam as *mut HWND) = hwnd;
         return FALSE;
     }
-    return TRUE;
+    TRUE
 }
 
 fn main() {

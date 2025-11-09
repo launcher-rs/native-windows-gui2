@@ -73,8 +73,8 @@ impl RawResource {
     }
 
     /// Return the resource data as a byte slice. This is equivalent to using `slice::from_raw_parts_mut`
-    pub unsafe fn as_mut_slice(&self) -> &mut [u8] {
-        std::slice::from_raw_parts_mut(self.lock() as *mut u8, self.len())
+    pub fn as_mut_slice(&self) -> &mut [u8] {
+        unsafe { std::slice::from_raw_parts_mut(self.lock() as *mut u8, self.len()) }
     }
 
     fn lock(&self) -> *mut c_void {
@@ -210,7 +210,7 @@ impl EmbedResource {
         match self.raw(id, RawResourceType::Other("Image")) {
             None => None,
             Some(raw) => {
-                let src = unsafe { raw.as_mut_slice() };
+                let src = raw.as_mut_slice();
                 let handle = unsafe { rh::build_image_decoder_from_memory(src, size) };
                 match handle {
                     Ok(handle) => Some(Bitmap {

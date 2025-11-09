@@ -1,8 +1,7 @@
 use crate::ControlHandle;
-use std::ffi::{CStr, OsString};
+use std::ffi::OsString;
 use std::os::windows::ffi::OsStringExt;
 use std::ptr;
-use winapi::ctypes::c_char;
 use winapi::shared::minwindef::DWORD;
 use winapi::shared::windef::HWND;
 
@@ -64,15 +63,17 @@ pub unsafe fn from_wide_ptr(ptr: *mut u16, length: Option<usize>) -> String {
         Some(v) => v,
         None => {
             let mut length: isize = 0;
-            while *&*ptr.offset(length) != 0 {
-                length += 1;
+            unsafe {
+                while *&*ptr.offset(length) != 0 {
+                    length += 1;
+                }
             }
 
             length as usize
         }
     };
 
-    let array: &[u16] = from_raw_parts(ptr, length);
+    let array: &[u16] = unsafe { from_raw_parts(ptr, length) };
     from_utf16(array)
 }
 
@@ -85,15 +86,17 @@ pub unsafe fn os_string_from_wide_ptr(ptr: *mut u16, length: Option<usize>) -> O
         Some(v) => v,
         None => {
             let mut length: isize = 0;
-            while *&*ptr.offset(length) != 0 {
-                length += 1;
+            unsafe {
+                while *&*ptr.offset(length) != 0 {
+                    length += 1;
+                }
             }
 
             length as usize
         }
     };
 
-    let array: &[u16] = from_raw_parts(ptr, length);
+    let array: &[u16] = unsafe { from_raw_parts(ptr, length) };
     OsString::from_wide(array)
 }
 
@@ -110,19 +113,23 @@ pub unsafe fn get_system_error() -> (DWORD, String) {
     use winapi::um::winbase::{FORMAT_MESSAGE_FROM_SYSTEM, FormatMessageW};
     use winapi::um::winnt::{LANG_NEUTRAL, MAKELANGID, SUBLANG_DEFAULT};
 
-    let code = GetLastError();
+    let code = unsafe { GetLastError() };
     let lang = MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT) as DWORD;
     let mut buf: Vec<u16> = Vec::with_capacity(1024);
-    buf.set_len(1024);
-    FormatMessageW(
-        FORMAT_MESSAGE_FROM_SYSTEM,
-        ptr::null(),
-        code,
-        lang,
-        buf.as_mut_ptr(),
-        1024,
-        ptr::null_mut(),
-    );
+    unsafe {
+        buf.set_len(1024);
+    }
+    unsafe {
+        FormatMessageW(
+            FORMAT_MESSAGE_FROM_SYSTEM,
+            ptr::null(),
+            code,
+            lang,
+            buf.as_mut_ptr(),
+            1024,
+            ptr::null_mut(),
+        );
+    }
 
     let end = buf.iter().position(|&i| i == 0).unwrap_or(1024);
     let error_message = OsString::from_wide(&buf[..end])

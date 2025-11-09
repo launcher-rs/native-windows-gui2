@@ -10,7 +10,9 @@ pub unsafe fn set_dpi_awareness() {}
 )]
 pub unsafe fn set_dpi_awareness() {
     use winapi::um::winuser::SetProcessDPIAware;
-    SetProcessDPIAware();
+    unsafe {
+        SetProcessDPIAware();
+    }
 }
 
 #[cfg(not(feature = "high-dpi"))]
@@ -21,17 +23,17 @@ pub fn scale_factor() -> f64 {
 #[cfg(feature = "high-dpi")]
 pub fn scale_factor() -> f64 {
     use winapi::um::winuser::USER_DEFAULT_SCREEN_DPI;
-    let dpi = unsafe { dpi() };
+    let dpi = dpi();
     f64::from(dpi) / f64::from(USER_DEFAULT_SCREEN_DPI)
 }
 
 #[cfg(not(feature = "high-dpi"))]
-pub unsafe fn logical_to_physical(x: i32, y: i32) -> (i32, i32) {
+pub fn logical_to_physical(x: i32, y: i32) -> (i32, i32) {
     (x, y)
 }
 
 #[cfg(feature = "high-dpi")]
-pub unsafe fn logical_to_physical(x: i32, y: i32) -> (i32, i32) {
+pub fn logical_to_physical(x: i32, y: i32) -> (i32, i32) {
     use muldiv::MulDiv;
     use winapi::um::winuser::USER_DEFAULT_SCREEN_DPI;
     let dpi = dpi();
@@ -41,12 +43,12 @@ pub unsafe fn logical_to_physical(x: i32, y: i32) -> (i32, i32) {
 }
 
 #[cfg(not(feature = "high-dpi"))]
-pub unsafe fn physical_to_logical(x: i32, y: i32) -> (i32, i32) {
+pub fn physical_to_logical(x: i32, y: i32) -> (i32, i32) {
     (x, y)
 }
 
 #[cfg(feature = "high-dpi")]
-pub unsafe fn physical_to_logical(x: i32, y: i32) -> (i32, i32) {
+pub fn physical_to_logical(x: i32, y: i32) -> (i32, i32) {
     use muldiv::MulDiv;
     use winapi::um::winuser::USER_DEFAULT_SCREEN_DPI;
     let dpi = dpi();
@@ -55,11 +57,11 @@ pub unsafe fn physical_to_logical(x: i32, y: i32) -> (i32, i32) {
     (x, y)
 }
 
-pub unsafe fn dpi() -> i32 {
+pub fn dpi() -> i32 {
     use winapi::um::wingdi::GetDeviceCaps;
     use winapi::um::wingdi::LOGPIXELSX;
     use winapi::um::winuser::GetDC;
-    let screen = GetDC(std::ptr::null_mut());
-    let dpi = GetDeviceCaps(screen, LOGPIXELSX);
+    let screen = unsafe { GetDC(std::ptr::null_mut()) };
+    let dpi = unsafe { GetDeviceCaps(screen, LOGPIXELSX) };
     dpi
 }

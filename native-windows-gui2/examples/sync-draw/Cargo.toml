@@ -13,4 +13,4 @@ glutin = "0.21"
 gl = "0.6"
 
 [target.'cfg(windows)'.dependencies]
-winapi = { version = "0.3", features = ["winuser", "psapi", "processthreadsapi", "synchapi"] }
+winapi = { version = "0.3", features = ["winuser", "psapi", "processthreadsapi", "synchapi","memoryapi"] }

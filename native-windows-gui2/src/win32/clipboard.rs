@@ -278,7 +278,7 @@ impl Clipboard {
         * Note 1: `data` is copied into a global system allocation. It's ok to discard the data as soon as this function returns.
         * Note 2: When copying text, the null byte must be included.
     */
-    pub unsafe fn set_data<D: Copy>(fmt: ClipboardFormat, data: *const D, count: usize) {
+    pub fn set_data<D: Copy>(fmt: ClipboardFormat, data: *const D, count: usize) {
         use std::{mem, ptr};
         use winapi::shared::basetsd::SIZE_T;
         use winapi::um::winbase::{
@@ -288,13 +288,19 @@ impl Clipboard {
 
         let fmt = fmt.into_raw();
         let alloc_size = (mem::size_of::<D>() * count) as SIZE_T;
-        let alloc = GlobalAlloc(GMEM_MOVEABLE, alloc_size);
+        let alloc = unsafe { GlobalAlloc(GMEM_MOVEABLE, alloc_size) };
 
-        ptr::copy_nonoverlapping(data, GlobalLock(alloc) as *mut D, count);
-        GlobalUnlock(alloc);
+        unsafe {
+            ptr::copy_nonoverlapping(data, GlobalLock(alloc) as *mut D, count);
+        }
+        unsafe {
+            GlobalUnlock(alloc);
+        }
 
-        if SetClipboardData(fmt, alloc as HANDLE).is_null() {
-            GlobalFree(alloc);
+        unsafe {
+            if SetClipboardData(fmt, alloc as HANDLE).is_null() {
+                GlobalFree(alloc);
+            }
         }
     }
 
@@ -316,20 +322,24 @@ impl Clipboard {
 
         If no data is found with the selected clipboard format, `None` is returned.
     */
-    pub unsafe fn data<D: Copy>(fmt: ClipboardFormat) -> Option<D> {
+    pub fn data<D: Copy>(fmt: ClipboardFormat) -> Option<D> {
         use std::{mem, ptr};
         use winapi::um::winbase::{GlobalLock, GlobalUnlock};
         use winapi::um::winuser::GetClipboardData;
 
         let fmt = fmt.into_raw();
-        let handle = GetClipboardData(fmt);
+        let handle = unsafe { GetClipboardData(fmt) };
         if handle.is_null() {
             return None;
         }
 
-        let mut data = mem::zeroed();
-        ptr::copy_nonoverlapping(GlobalLock(handle) as *const D, &mut data, 1);
-        GlobalUnlock(handle);
+        let mut data = unsafe { mem::zeroed() };
+        unsafe {
+            ptr::copy_nonoverlapping(GlobalLock(handle) as *const D, &mut data, 1);
+        }
+        unsafe {
+            GlobalUnlock(handle);
+        }
 
         Some(data)
     }
@@ -342,15 +352,17 @@ impl Clipboard {
 
         If no data is found with the selected clipboard format, `None` is returned.
     */
-    pub unsafe fn data_handle(fmt: ClipboardFormat) -> Option<ClipboardData> {
+    pub fn data_handle(fmt: ClipboardFormat) -> Option<ClipboardData> {
         use winapi::um::winbase::GlobalLock;
         use winapi::um::winuser::GetClipboardData;
 
         let fmt = fmt.into_raw();
-        let handle = GetClipboardData(fmt);
-        match handle.is_null() {
-            true => None,
-            false => Some(ClipboardData(GlobalLock(handle))),
+        let handle = unsafe { GetClipboardData(fmt) };
+        unsafe {
+            match handle.is_null() {
+                true => None,
+                false => Some(ClipboardData(GlobalLock(handle))),
+            }
         }
     }
 
@@ -394,31 +406,35 @@ impl Clipboard {
     }
 }
 
-unsafe fn from_wide_ptr(ptr: *const u16) -> Option<String> {
+fn from_wide_ptr(ptr: *const u16) -> Option<String> {
     use std::ffi::OsString;
     use std::os::windows::ffi::OsStringExt;
     use std::slice::from_raw_parts;
 
     let mut length: isize = 0;
-    while *&*ptr.offset(length) != 0 {
-        length += 1;
+    unsafe {
+        while *&*ptr.offset(length) != 0 {
+            length += 1;
+        }
     }
 
-    let array: &[u16] = from_raw_parts(ptr, length as usize);
+    let array: &[u16] = unsafe { from_raw_parts(ptr, length as usize) };
 
     OsString::from_wide(&array).into_string().ok()
 }
 
-unsafe fn from_ptr(ptr: *const u8) -> Option<String> {
+fn from_ptr(ptr: *const u8) -> Option<String> {
     use std::slice::from_raw_parts;
     use std::str;
 
     let mut length: isize = 0;
-    while *&*ptr.offset(length) != 0 {
-        length += 1;
+    unsafe {
+        while *&*ptr.offset(length) != 0 {
+            length += 1;
+        }
     }
 
-    let array: &[u8] = from_raw_parts(ptr, length as usize);
+    let array: &[u8] = unsafe { from_raw_parts(ptr, length as usize) };
 
     str::from_utf8(array).map(|s| s.into()).ok()
 }

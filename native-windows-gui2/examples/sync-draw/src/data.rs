@@ -13,8 +13,9 @@ type Size = (u32, u32);
     - Draw: Paint pixels
     - Erase: Remove painted pixel
 */
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, Default)]
 pub enum AppMode {
+    #[default]
     Draw,
     Erase,
 }
@@ -44,7 +45,7 @@ impl AppData {
     pub fn new() -> AppData {
         // Create or load the shared memory region depending if the current instance is the only one on the host
         let instances = AppData::collect_instances();
-        let shared = match instances.len() == 0 {
+        let shared = match instances.is_empty() {
             true => SharedMemory::new(),
             false => SharedMemory::load(),
         };
@@ -62,16 +63,14 @@ impl AppData {
         // Save the instance in the shared memory
         shared.save_instance_id(instance_id);
 
-        let data = AppData {
+        AppData {
             shared,
             event,
             thread_handle: None,
             instance_id,
             drawing: false,
             mode: AppMode::Draw,
-        };
-
-        data
+        }
     }
 
     /// Free allocated resources
@@ -80,9 +79,9 @@ impl AppData {
         self.shared.close(self.instance_id);
         self.event.close();
 
-        self.thread_handle
-            .take()
-            .map(|h| h.join().expect("The thread being joined has panicked"));
+        if let Some(h) = self.thread_handle.take() {
+            h.join().expect("The thread being joined has panicked")
+        }
     }
 
     /// Returns true if this instance created the shared memory. Returns false otherwise.
@@ -222,13 +221,10 @@ impl AppData {
 
                 let length: usize = process_name.iter().position(|&n| n == 0).unwrap_or(0);
                 let name = OsString::from_wide(&process_name[..length]);
-                match Path::new(&name).file_name() {
-                    Some(name) => {
-                        if name == "syncdraw.exe" {
-                            instances_pid.push(process_id);
-                        }
-                    }
-                    None => {}
+                if let Some(name) = Path::new(&name).file_name()
+                    && name == "syncdraw.exe"
+                {
+                    instances_pid.push(process_id);
                 }
 
                 CloseHandle(handle);
@@ -236,11 +232,5 @@ impl AppData {
 
             instances_pid
         }
-    }
-}
-
-impl Default for AppMode {
-    fn default() -> AppMode {
-        AppMode::Draw
     }
 }

@@ -186,5 +186,3 @@ pub use scroll_bar::{ScrollBar, ScrollBarBuilder, ScrollBarFlags};
 pub use self::plotters::{
     Plotters, PlottersBackend, PlottersBuilder, PlottersDrawingArea, PlottersError,
 };
-
-pub use handle_from_control::*;

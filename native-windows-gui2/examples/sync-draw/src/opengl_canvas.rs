@@ -148,7 +148,7 @@ impl OpenGlCanvas {
                 -1.0, 1.0, 0.0, 0.0, -1.0, -1.0, 0.0, 1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 0.0,
                 0.0, 1.0, 1.0, 1.0, 0.0, 1.0, -1.0, 1.0, 1.0,
             ];
-            let vertex_size = vertex_data.len() * mem::size_of::<f32>();
+            let vertex_size = std::mem::size_of_val(vertex_data);
 
             let mut vb = mem::zeroed();
             gl::GenBuffers(1, &mut vb);
@@ -194,8 +194,8 @@ impl OpenGlCanvas {
         const HALF_BRUSH: i32 = BRUSH / 2;
 
         let (mut x, mut y) = pos;
-        x = (x) - HALF_BRUSH;
-        y = (y) - HALF_BRUSH;
+        x -= HALF_BRUSH;
+        y -= HALF_BRUSH;
 
         let mut data = Vec::with_capacity((BRUSH * BRUSH) as usize);
         for _ in 0..(BRUSH * BRUSH) {
@@ -341,21 +341,20 @@ unsafe fn check_shader_status(shader: u32) {
     use std::ffi::CStr;
 
     let mut status = 1;
-    gl::GetShaderiv(shader, gl::COMPILE_STATUS, &mut status);
+    unsafe { gl::GetShaderiv(shader, gl::COMPILE_STATUS, &mut status) };
     if status == 0 {
         let mut error_length = 0;
-        gl::GetShaderiv(shader, gl::SHADER_SOURCE_LENGTH, &mut error_length);
+        unsafe { gl::GetShaderiv(shader, gl::SHADER_SOURCE_LENGTH, &mut error_length) };
 
         error_length += 1;
         let mut logs: Vec<gl::types::GLchar> = Vec::with_capacity(error_length as usize);
-        logs.set_len(error_length as usize);
+        unsafe { logs.set_len(error_length as usize) };
 
-        gl::GetShaderInfoLog(shader, error_length, &mut error_length, logs.as_mut_ptr());
+        unsafe { gl::GetShaderInfoLog(shader, error_length, &mut error_length, logs.as_mut_ptr()) };
 
-        panic!(
-            "\n\n{}\n\n",
+        panic!("\n\n{}\n\n", unsafe {
             CStr::from_ptr(logs.as_ptr()).to_str().unwrap()
-        );
+        });
     }
 }
 
@@ -363,21 +362,22 @@ unsafe fn check_program_status(program: u32) {
     use std::ffi::CStr;
 
     let mut status = 1;
-    gl::GetProgramiv(program, gl::COMPILE_STATUS, &mut status);
+    unsafe { gl::GetProgramiv(program, gl::COMPILE_STATUS, &mut status) };
     if status == 0 {
         let mut error_length = 0;
-        gl::GetProgramiv(program, gl::SHADER_SOURCE_LENGTH, &mut error_length);
+        unsafe { gl::GetProgramiv(program, gl::SHADER_SOURCE_LENGTH, &mut error_length) };
 
         error_length += 1;
         let mut logs: Vec<gl::types::GLchar> = Vec::with_capacity(error_length as usize);
-        logs.set_len(error_length as usize);
+        unsafe { logs.set_len(error_length as usize) };
 
-        gl::GetProgramInfoLog(program, error_length, &mut error_length, logs.as_mut_ptr());
+        unsafe {
+            gl::GetProgramInfoLog(program, error_length, &mut error_length, logs.as_mut_ptr())
+        };
 
-        panic!(
-            "\n\n{}\n\n",
+        panic!("\n\n{}\n\n", unsafe {
             CStr::from_ptr(logs.as_ptr()).to_str().unwrap()
-        );
+        });
     }
 }
 
@@ -388,24 +388,26 @@ unsafe fn clear_texture(w: u32, h: u32) {
         texture_data.push([255, 255, 255, 255]);
     }
 
-    gl::TexSubImage2D(
-        gl::TEXTURE_2D,
-        0, // mip level
-        0,
-        0, // offset
-        w as _,
-        h as _,
-        gl::RGBA,
-        gl::UNSIGNED_BYTE,
-        texture_data.as_mut_ptr() as *mut c_void,
-    );
+    unsafe {
+        gl::TexSubImage2D(
+            gl::TEXTURE_2D,
+            0, // mip level
+            0,
+            0, // offset
+            w as _,
+            h as _,
+            gl::RGBA,
+            gl::UNSIGNED_BYTE,
+            texture_data.as_mut_ptr() as *mut c_void,
+        );
+    }
 }
 
 //
 // The shader sources
 //
 
-const VS_SRC: &'static [u8] = b"#version 330
+const VS_SRC: &[u8] = b"#version 330
 layout (location=0) in vec2 a_position;
 layout (location=1) in vec2 a_uv;
 
@@ -417,7 +419,7 @@ void main() {
 }
 \0";
 
-const FS_SRC: &'static [u8] = b"#version 330
+const FS_SRC: &[u8] = b"#version 330
 precision mediump float;
 
 in vec2 uv;

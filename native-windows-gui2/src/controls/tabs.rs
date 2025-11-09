@@ -152,64 +152,64 @@ impl TabsContainer {
     /// Return true if the control currently has the keyboard focus
     pub fn focus(&self) -> bool {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-        unsafe { wh::get_focus(handle) }
+         wh::get_focus(handle)
     }
 
     /// Set the keyboard focus on the button.
     pub fn set_focus(&self) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-        unsafe {
+
             wh::set_focus(handle);
-        }
+
     }
 
     /// Return true if the control user can interact with the control, return false otherwise
     pub fn enabled(&self) -> bool {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-        unsafe { wh::get_window_enabled(handle) }
+         wh::get_window_enabled(handle)
     }
 
     /// Enable or disable the control
     pub fn set_enabled(&self, v: bool) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-        unsafe { wh::set_window_enabled(handle, v) }
+        wh::set_window_enabled(handle, v)
     }
 
     /// Return true if the control is visible to the user. Will return true even if the
     /// control is outside of the parent client view (ex: at the position (10000, 10000))
     pub fn visible(&self) -> bool {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-        unsafe { wh::get_window_visibility(handle) }
+        wh::get_window_visibility(handle)
     }
 
     /// Show or hide the control to the user
     pub fn set_visible(&self, v: bool) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-        unsafe { wh::set_window_visibility(handle, v) }
+        wh::set_window_visibility(handle, v)
     }
 
     /// Return the size of the tabs container in the parent window
     pub fn size(&self) -> (u32, u32) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-        unsafe { wh::get_window_size(handle) }
+       wh::get_window_size(handle)
     }
 
     /// Set the size of the tabs container in the parent window
     pub fn set_size(&self, x: u32, y: u32) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-        unsafe { wh::set_window_size(handle, x, y, false) }
+       wh::set_window_size(handle, x, y, false)
     }
 
     /// Return the position of the tabs container in the parent window
     pub fn position(&self) -> (i32, i32) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-        unsafe { wh::get_window_position(handle) }
+         wh::get_window_position(handle)
     }
 
     /// Set the position of the tabs container in the parent window
     pub fn set_position(&self, x: i32, y: i32) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-        unsafe { wh::set_window_position(handle, x, y) }
+       wh::set_window_position(handle, x, y)
     }
 
     /// Return the font of the control
@@ -228,9 +228,9 @@ impl TabsContainer {
     /// Set the font of the control
     pub fn set_font(&self, font: Option<&Font>) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-        unsafe {
+
             wh::set_window_font(handle, font.map(|f| f.handle), true);
-        }
+
     }
 
     /// Winapi class name used during control creation
@@ -580,7 +580,7 @@ impl Tab {
             panic!("{}", NOT_BOUND);
         }
         let handle = self.handle.hwnd().expect(BAD_HANDLE);
-        unsafe { wh::get_window_visibility(handle) }
+        wh::get_window_visibility(handle)
     }
 
     /// Show or hide the control to the user
@@ -589,7 +589,7 @@ impl Tab {
             panic!("{}", NOT_BOUND);
         }
         let handle = self.handle.hwnd().expect(BAD_HANDLE);
-        unsafe { wh::set_window_visibility(handle, v) }
+         wh::set_window_visibility(handle, v)
     }
 
     //
@@ -729,7 +729,7 @@ impl<'a> TabBuilder<'a> {
 
         match &parent {
             &ControlHandle::Hwnd(h) => {
-                let class_name = unsafe { wh::get_window_class_name(h) };
+                let class_name = wh::get_window_class_name(h) ;
                 if &class_name != WC_TABCONTROL {
                     Err(NwgError::control_create(
                         "Tab requires a TabsContainer parent.",
@@ -779,8 +779,8 @@ struct ResizeDirectChildrenParams {
     tab_offset_y: u32,
 }
 
-unsafe extern "system" fn resize_direct_children(handle: HWND, params: LPARAM) -> BOOL {
-    let params: &ResizeDirectChildrenParams = &*(params as *const ResizeDirectChildrenParams);
+ extern "system" fn resize_direct_children(handle: HWND, params: LPARAM) -> BOOL {
+    let params: &ResizeDirectChildrenParams = unsafe{&*(params as *const ResizeDirectChildrenParams)};
     if wh::get_window_parent(handle) == params.parent {
         wh::set_window_size(handle, params.width, params.height, false);
 
@@ -791,23 +791,23 @@ unsafe extern "system" fn resize_direct_children(handle: HWND, params: LPARAM) -
     1
 }
 
-unsafe extern "system" fn count_children(handle: HWND, params: LPARAM) -> BOOL {
+extern "system" fn count_children(handle: HWND, params: LPARAM) -> BOOL {
     use winapi::um::winuser::GWL_USERDATA;
 
     if &wh::get_window_class_name(handle) == "NWG_TAB" {
         let tab_index = (wh::get_window_long(handle, GWL_USERDATA)) as WPARAM;
         let count = params as *mut usize;
-        *count = usize::max(tab_index + 1, *count);
+        unsafe { *count = usize::max(tab_index + 1, *count); }
     }
 
     1
 }
 
 /// Toggle the visibility of the active and inactive tab.
-unsafe extern "system" fn toggle_children_tabs(handle: HWND, params: LPARAM) -> BOOL {
+extern "system" fn toggle_children_tabs(handle: HWND, params: LPARAM) -> BOOL {
     use winapi::um::winuser::GWL_USERDATA;
 
-    let (parent, index) = *(params as *const (HWND, i32));
+    let (parent, index) = unsafe{*(params as *const (HWND, i32))};
     if wh::get_window_parent(handle) == parent {
         let tab_index = wh::get_window_long(handle, GWL_USERDATA) as i32;
         let visible = tab_index == index + 1;

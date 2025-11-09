@@ -137,18 +137,16 @@ impl HwndBuilder {
     }
 
     pub fn build(self) -> Result<ControlHandle, NwgError> {
-        let handle = unsafe {
-            build_hwnd_control(
-                &self.class_name,
-                self.text.as_ref().map(|v| v as &str),
-                self.size,
-                self.pos,
-                self.flags,
-                self.ex_flags,
-                self.forced_flags,
-                self.parent,
-            )?
-        };
+        let handle = build_hwnd_control(
+            &self.class_name,
+            self.text.as_ref().map(|v| v as &str),
+            self.size,
+            self.pos,
+            self.flags,
+            self.ex_flags,
+            self.forced_flags,
+            self.parent,
+        )?;
 
         Ok(handle)
     }
@@ -211,16 +209,14 @@ impl HmenuBuilder {
     }
 
     pub fn build(self) -> Result<ControlHandle, NwgError> {
-        let handle = unsafe {
-            build_hmenu_control(
-                self.text,
-                self.item,
-                self.separator,
-                self.popup,
-                self.parent_menu,
-                self.parent_window,
-            )?
-        };
+        let handle = build_hmenu_control(
+            self.text,
+            self.item,
+            self.separator,
+            self.popup,
+            self.parent_menu,
+            self.parent_window,
+        )?;
 
         Ok(handle)
     }

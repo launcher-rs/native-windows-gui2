@@ -5,7 +5,6 @@ use nwd::NwgUi;
 use nwg::NativeUi;
 use nwg::{AnimationTimer, Button, Window};
 use std::cell::RefCell;
-use std::collections::HashMap;
 use std::time::Duration;
 
 #[derive(Default, NwgUi)]

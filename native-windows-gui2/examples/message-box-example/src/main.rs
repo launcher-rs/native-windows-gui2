@@ -9,14 +9,14 @@ extern crate native_windows_gui2 as nwg;
 use nwd::NwgUi;
 use nwg::stretch::{
     geometry::{Rect, Size},
-    style::{AlignContent, AlignSelf, Dimension as D, FlexDirection, FlexWrap},
+    style::{AlignContent, Dimension as D, FlexDirection, FlexWrap},
 };
 use nwg::{FlexboxLayout, NativeUi};
 
 const PT_5: D = D::Points(1.0);
-const FIFTY_PC: D = D::Percent(0.5);
+// const FIFTY_PC: D = D::Percent(0.5);
 const PT_10: D = D::Points(10.0);
-const PT_20: D = D::Points(20.0);
+// const PT_20: D = D::Points(20.0);
 const PADDING: Rect<D> = Rect {
     start: PT_10,
     end: PT_10,
@@ -78,9 +78,9 @@ pub struct BasicApp {
 }
 
 impl BasicApp {
-    fn fatal_message(&self) {
-        nwg::fatal_message("fatal_message", "fatal_message");
-    }
+    // fn fatal_message(&self) {
+    //     nwg::fatal_message("fatal_message", "fatal_message");
+    // }
 
     fn error_message(&self) {
         nwg::error_message("error_message", "error_message");
@@ -121,9 +121,9 @@ impl BasicApp {
         }
     }
 
-    fn exit(&self) {
-        nwg::stop_thread_dispatch();
-    }
+    // fn exit(&self) {
+    //     nwg::stop_thread_dispatch();
+    // }
 }
 
 fn main() {

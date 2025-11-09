@@ -38,8 +38,8 @@ To use NWG in your project add it to cargo.toml:
 
 ```toml
 [dependencies]
-native-windows-gui = "1.0.12"
-native-windows-derive = "1.0.3" # Optional. Only if the derive macro is used.
+native-windows-gui2 = "0.1.0"
+native-windows-derive2 = "0.1.0" # Optional. Only if the derive macro is used.
 ```
 
 And then, in main.rs or lib.rs :

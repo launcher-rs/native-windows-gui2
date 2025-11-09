@@ -186,14 +186,14 @@ impl<'a> SceneRef<'a> {
         self.scene
             .get("nodes")
             .and_then(|v| v.as_array())
-            .and_then(move |v| {
-                Some(v.iter().filter_map(move |v| {
+            .map(move |v| {
+                v.iter().filter_map(move |v| {
                     let index = v.as_u64().unwrap() as usize;
                     nodes
                         .get(index)
                         .and_then(|v| v.as_object())
-                        .map(|node| NodeRef::from_map(node))
-                }))
+                        .map(NodeRef::from_map)
+                })
             })
             .unwrap()
     }
@@ -227,7 +227,7 @@ impl GlbFile {
     }
 
     /// Return a reference to the GLB json structure
-    pub fn json<'a>(&'a self) -> &'a Map<String, Value> {
+    pub fn json(&self) -> &Map<String, Value> {
         match self.json.as_object() {
             Some(obj) => obj,
             None => unreachable!("Json structure is always an object"),
@@ -256,7 +256,7 @@ impl GlbFile {
     }
 
     /// Find a mesh by index
-    pub fn simple_mesh_by_index<'a>(&'a self, index: usize) -> Result<Option<SimpleMesh>, String> {
+    pub fn simple_mesh_by_index(&self, index: usize) -> Result<Option<SimpleMesh>, String> {
         let meshes = self
             .json
             .get("meshes")
@@ -266,14 +266,14 @@ impl GlbFile {
         let mesh = meshes.get(index);
 
         match mesh.map(|m| m.as_object().unwrap()) {
-            Some(mesh_obj) => SimpleMesh::from_obj(mesh_obj).map(|mesh| Some(mesh)),
+            Some(mesh_obj) => SimpleMesh::from_obj(mesh_obj).map(Some),
             None => Ok(None),
         }
     }
 
     /// Find a mesh by name. The mesh cannot have more than 1 primitive group
     /// Returns an error if the meshes configuration of the GLB file is invalid
-    pub fn simple_mesh_by_name<'a>(&'a self, name_ref: &str) -> Result<Option<SimpleMesh>, String> {
+    pub fn simple_mesh_by_name(&self, name_ref: &str) -> Result<Option<SimpleMesh>, String> {
         let meshes = self
             .json
             .get("meshes")
@@ -289,7 +289,7 @@ impl GlbFile {
         });
 
         match mesh.map(|m| m.as_object().unwrap()) {
-            Some(mesh_obj) => SimpleMesh::from_obj(mesh_obj).map(|mesh| Some(mesh)),
+            Some(mesh_obj) => SimpleMesh::from_obj(mesh_obj).map(Some),
             None => Ok(None),
         }
     }
@@ -315,7 +315,7 @@ impl GlbFile {
 
         let mesh = meshes.get(mesh_index);
         match mesh.map(|m| m.as_object().unwrap()) {
-            Some(mesh_obj) => SimpleMesh::from_obj(mesh_obj).map(|mesh| Some(mesh)),
+            Some(mesh_obj) => SimpleMesh::from_obj(mesh_obj).map(Some),
             None => Ok(None),
         }
     }
@@ -340,13 +340,13 @@ impl GlbFile {
         let component_ty = accessor_obj
             .get("componentType")
             .and_then(|v| v.as_u64())
-            .map(|v| ComponentType::from_u64(v))
+            .map(ComponentType::from_u64)
             .ok_or(format!("Failed to read count for accessor {}", id))??;
 
         let ty = accessor_obj
             .get("type")
             .and_then(|v| v.as_str())
-            .map(|v| AccessorType::from_str(v))
+            .map(AccessorType::from_str)
             .ok_or(format!("Failed to read type for accessor {}", id))??;
 
         let data = {

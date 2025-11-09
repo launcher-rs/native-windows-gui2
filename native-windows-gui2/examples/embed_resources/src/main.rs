@@ -51,7 +51,7 @@ impl EmbedApp {
             .set_bitmap(em.bitmap_str("BALL", None).as_ref());
 
         // Load a custom font from embed resource
-        let mem_font = unsafe {
+        let mem_font = {
             let rc = self
                 .embed
                 .raw_str("INDIE", nwg::RawResourceType::Other("FONTFILE"))

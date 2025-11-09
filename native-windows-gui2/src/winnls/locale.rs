@@ -57,9 +57,9 @@ impl Locale {
         use winapi::shared::minwindef::{BOOL, DWORD, LPARAM};
         use winapi::um::winnls::EnumSystemLocalesEx;
 
-        unsafe extern "system" fn enum_locales(locale: LPWSTR, _flags: DWORD, p: LPARAM) -> BOOL {
+         extern "system" fn enum_locales(locale: LPWSTR, _flags: DWORD, p: LPARAM) -> BOOL {
             let locales: *mut Vec<String> = p as *mut Vec<String>;
-            (&mut *locales).push(from_wide_ptr(locale, None));
+            unsafe {(&mut *locales).push(from_wide_ptr(locale, None))};
             1
         }
 

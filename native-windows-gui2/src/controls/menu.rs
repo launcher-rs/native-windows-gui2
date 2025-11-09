@@ -120,7 +120,7 @@ impl Menu {
             _ => panic!("{}", BAD_HANDLE),
         };
 
-        unsafe { mh::is_menu_enabled(parent_handle, handle) }
+        mh::is_menu_enabled(parent_handle, handle)
     }
 
     /// Enable or disable the control
@@ -137,9 +137,9 @@ impl Menu {
             _ => panic!("{}", BAD_HANDLE),
         };
 
-        unsafe {
+
             mh::enable_menu(parent_handle, handle, v);
-        }
+
     }
 
     /// Show a popup menu as the selected position. Do nothing for menubar menu.
@@ -312,7 +312,7 @@ impl MenuItem {
         }
         let (parent_handle, id) = self.handle.hmenu_item().expect(BAD_HANDLE);
 
-        unsafe { mh::is_menuitem_enabled(parent_handle, None, Some(id)) }
+        mh::is_menuitem_enabled(parent_handle, None, Some(id))
     }
 
     /// Enable or disable the control
@@ -322,9 +322,8 @@ impl MenuItem {
         }
         let (parent_handle, id) = self.handle.hmenu_item().expect(BAD_HANDLE);
 
-        unsafe {
             mh::enable_menuitem(parent_handle, None, Some(id), v);
-        }
+
     }
 
     /// Sets the check state of a menu item
@@ -334,9 +333,9 @@ impl MenuItem {
         }
         let (parent_handle, id) = self.handle.hmenu_item().expect(BAD_HANDLE);
 
-        unsafe {
+
             mh::check_menu_item(parent_handle, id, check);
-        }
+
     }
 
     /// Returns the check state of a menu item
@@ -346,7 +345,7 @@ impl MenuItem {
         }
         let (parent_handle, id) = self.handle.hmenu_item().expect(BAD_HANDLE);
 
-        unsafe { mh::menu_item_checked(parent_handle, id) }
+         mh::menu_item_checked(parent_handle, id)
     }
 }
 

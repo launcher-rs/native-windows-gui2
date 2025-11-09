@@ -2,12 +2,10 @@ extern crate native_windows_derive2 as nwd;
 extern crate native_windows_gui2 as nwg;
 
 use nwd::NwgUi;
-use nwg::{AnimationTimer, Button, Window};
+use nwg::{Button, Window};
 use nwg::{ColorDialog, FontDialog, NativeUi, TextInput};
 use serde::{Deserialize, Serialize};
-use std::cell::RefCell;
 use std::fs;
-use std::time::Duration;
 
 #[derive(Serialize, Deserialize, Debug)]
 struct Data {
@@ -68,7 +66,7 @@ impl LoadConfigApp {
         let data = Data { text: data };
 
         let data = serde_json::to_string_pretty(&data).unwrap();
-        if let Ok(_) = fs::write("config.json", data) {
+        if fs::write("config.json", data).is_ok() {
             nwg::modal_info_message(&self.window, "信息提示", "保存成功");
         }
     }

@@ -36,7 +36,7 @@ pub struct TreeViewIterator<'a> {
 
 impl<'a> TreeViewIterator<'a> {
     /// Use `TreeView.iter` to create a `TreeViewIterator`
-    pub(crate) fn new(tree_view: &'a TreeView, current_item: HTREEITEM) -> TreeViewIterator {
+    pub(crate) fn new(tree_view: &'a TreeView, current_item: HTREEITEM) -> TreeViewIterator<'a> {
         let tree_view_handle = tree_view.handle.hwnd().unwrap();
 
         let action = match current_item.is_null() {

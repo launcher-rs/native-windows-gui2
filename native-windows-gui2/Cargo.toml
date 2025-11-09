@@ -6,8 +6,7 @@ edition = "2024"
 
 description = "A rust library to develop native GUI applications on the desktop for Microsoft Windows. Native-windows-gui wraps the native win32 window controls in a rustic API"
 
-repository = "https://github.com/gabdube/native-windows-gui"
-documentation = "https://gabdube.github.io/native-windows-gui/native-windows-docs/index.html"
+repository = "https://github.com/launcher-rs/native-windows-gui2"
 
 license = "MIT"
 
@@ -15,10 +14,7 @@ build = "build.rs"
 keywords = ["gui", "ui", "windows"]
 
 [dependencies]
-winapi = { version = "0.3", features = [
-  "winuser", "wingdi", "winbase", "libloaderapi", "processthreadsapi",
-  "errhandlingapi", "winerror", "commctrl", "sysinfoapi", "shobjidl", "combaseapi",
-  "commdlg", "d2d1", "objbase", "dwrite", "winnls", "shellapi", "wincodec", "stringapiset", "dwmapi", "impl-default"] }
+winapi = { version = "0.3", features = ["winuser", "wingdi", "winbase", "libloaderapi", "processthreadsapi", "errhandlingapi", "winerror", "commctrl", "sysinfoapi", "shobjidl", "combaseapi", "commdlg", "d2d1", "objbase", "dwrite", "winnls", "shellapi", "wincodec", "stringapiset", "dwmapi", "impl-default", "dcommon"] }
 
 lazy_static = "1.4.0"
 bitflags = "1.1.0"

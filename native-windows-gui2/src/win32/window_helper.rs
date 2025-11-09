@@ -147,7 +147,7 @@ where
     {
         // Only iterate over the top level children
         let enum_data_ptr = p as *mut EnumChildData<F>;
-        let enum_data = &mut *enum_data_ptr;
+        let enum_data = unsafe { &mut *enum_data_ptr };
         if get_window_parent(hwnd) == enum_data.parent {
             (enum_data.callback)(hwnd);
         };
@@ -207,13 +207,13 @@ pub fn restore_window(handle: HWND) {
 }
 
 /// Set the font of a window
-pub unsafe fn set_window_font(handle: HWND, font_handle: Option<HFONT>, redraw: bool) {
+pub fn set_window_font(handle: HWND, font_handle: Option<HFONT>, redraw: bool) {
     use winapi::um::winuser::SendMessageW;
     use winapi::um::winuser::WM_SETFONT;
 
     let font_handle = font_handle.unwrap_or(ptr::null_mut());
 
-    SendMessageW(handle, WM_SETFONT, font_handle as WPARAM, redraw as LPARAM);
+    unsafe { SendMessageW(handle, WM_SETFONT, font_handle as WPARAM, redraw as LPARAM) };
 }
 
 #[cfg(feature = "timer")]
@@ -255,55 +255,57 @@ pub fn post_message(hwnd: HWND, msg: UINT, w: WPARAM, l: LPARAM) {
     unsafe { ::winapi::um::winuser::PostMessageW(hwnd, msg, w, l) };
 }
 
-pub unsafe fn set_focus(handle: HWND) {
-    ::winapi::um::winuser::SetFocus(handle);
+pub fn set_focus(handle: HWND) {
+    unsafe { ::winapi::um::winuser::SetFocus(handle) };
 }
 
-pub unsafe fn get_focus(handle: HWND) -> bool {
-    ::winapi::um::winuser::GetFocus() == handle
+pub fn get_focus(handle: HWND) -> bool {
+    unsafe { ::winapi::um::winuser::GetFocus() == handle }
 }
 
-pub unsafe fn get_window_text(handle: HWND) -> String {
+pub fn get_window_text(handle: HWND) -> String {
     use winapi::um::winuser::{GetWindowTextLengthW, GetWindowTextW};
 
-    let buffer_size = GetWindowTextLengthW(handle) as usize + 1;
+    let buffer_size = unsafe { GetWindowTextLengthW(handle) as usize + 1 };
     if buffer_size == 0 {
         return String::new();
     }
 
     let mut buffer: Vec<u16> = vec![0; buffer_size];
 
-    if GetWindowTextW(handle, buffer.as_mut_ptr(), buffer_size as c_int) == 0 {
+    if unsafe { GetWindowTextW(handle, buffer.as_mut_ptr(), buffer_size as c_int) } == 0 {
         String::new()
     } else {
         from_utf16(&buffer[..])
     }
 }
 
-pub unsafe fn set_window_text<'a>(handle: HWND, text: &'a str) {
+pub fn set_window_text<'a>(handle: HWND, text: &'a str) {
     use winapi::um::winuser::SetWindowTextW;
 
     let text = to_utf16(text);
-    SetWindowTextW(handle, text.as_ptr());
+    unsafe { SetWindowTextW(handle, text.as_ptr()) };
 }
 
-pub unsafe fn set_window_position(handle: HWND, x: i32, y: i32) {
+pub fn set_window_position(handle: HWND, x: i32, y: i32) {
     use winapi::um::winuser::SetWindowPos;
     use winapi::um::winuser::{SWP_NOACTIVATE, SWP_NOOWNERZORDER, SWP_NOSIZE, SWP_NOZORDER};
 
     let (x, y) = high_dpi::logical_to_physical(x, y);
-    SetWindowPos(
-        handle,
-        ptr::null_mut(),
-        x as c_int,
-        y as c_int,
-        0,
-        0,
-        SWP_NOZORDER | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOOWNERZORDER,
-    );
+    unsafe {
+        SetWindowPos(
+            handle,
+            ptr::null_mut(),
+            x as c_int,
+            y as c_int,
+            0,
+            0,
+            SWP_NOZORDER | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOOWNERZORDER,
+        )
+    };
 }
 
-pub unsafe fn set_window_after(handle: HWND, after: Option<HWND>) {
+pub fn set_window_after(handle: HWND, after: Option<HWND>) {
     use winapi::um::winuser::SetWindowPos;
     use winapi::um::winuser::{
         HWND_TOP, SWP_NOACTIVATE, SWP_NOMOVE, SWP_NOOWNERZORDER, SWP_NOSIZE,
@@ -314,40 +316,43 @@ pub unsafe fn set_window_after(handle: HWND, after: Option<HWND>) {
         Some(w) => w,
     };
 
-    SetWindowPos(
-        handle,
-        after_handle,
-        0,
-        0,
-        0,
-        0,
-        SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOOWNERZORDER,
-    );
+    unsafe {
+        SetWindowPos(
+            handle,
+            after_handle,
+            0,
+            0,
+            0,
+            0,
+            SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOOWNERZORDER,
+        )
+    };
 }
 
-pub unsafe fn get_window_position(handle: HWND) -> (i32, i32) {
+pub fn get_window_position(handle: HWND) -> (i32, i32) {
     use winapi::shared::windef::{POINT, RECT};
     use winapi::um::winuser::{GetParent, GetWindowRect, ScreenToClient};
 
-    let mut r: RECT = mem::zeroed();
-    GetWindowRect(handle, &mut r);
+    unsafe {
+        let mut r: RECT = mem::zeroed();
+        GetWindowRect(handle, &mut r);
 
-    let parent = GetParent(handle);
-    let (x, y) = if !parent.is_null() {
-        let mut pt = POINT {
-            x: r.left,
-            y: r.top,
+        let parent = GetParent(handle);
+        let (x, y) = if !parent.is_null() {
+            let mut pt = POINT {
+                x: r.left,
+                y: r.top,
+            };
+            ScreenToClient(parent, &mut pt);
+            (pt.x as i32, pt.y as i32)
+        } else {
+            (r.left as i32, r.top as i32)
         };
-        ScreenToClient(parent, &mut pt);
-        (pt.x as i32, pt.y as i32)
-    } else {
-        (r.left as i32, r.top as i32)
-    };
-
-    high_dpi::physical_to_logical(x, y)
+        high_dpi::physical_to_logical(x, y)
+    }
 }
 
-pub unsafe fn set_window_size(handle: HWND, w: u32, h: u32, fix: bool) {
+pub fn set_window_size(handle: HWND, w: u32, h: u32, fix: bool) {
     use winapi::shared::windef::RECT;
     use winapi::um::winuser::{AdjustWindowRectEx, GetWindowLongW, SetWindowPos};
     use winapi::um::winuser::{
@@ -358,46 +363,48 @@ pub unsafe fn set_window_size(handle: HWND, w: u32, h: u32, fix: bool) {
     let (mut w, mut h) = high_dpi::logical_to_physical(w as i32, h as i32);
 
     if fix {
-        let flags = GetWindowLongW(handle, GWL_STYLE) as u32;
-        let ex_flags = GetWindowLongW(handle, GWL_EXSTYLE) as u32;
+        let flags = unsafe { GetWindowLongW(handle, GWL_STYLE) as u32 };
+        let ex_flags = unsafe { GetWindowLongW(handle, GWL_EXSTYLE) as u32 };
         let mut rect = RECT {
             left: 0,
             top: 0,
             right: w,
             bottom: h,
         };
-        AdjustWindowRectEx(&mut rect, flags, 0, ex_flags);
+        unsafe { AdjustWindowRectEx(&mut rect, flags, 0, ex_flags) };
 
         w = rect.right - rect.left;
         h = rect.bottom - rect.top;
     }
 
-    SetWindowPos(
-        handle,
-        ptr::null_mut(),
-        0,
-        0,
-        w,
-        h,
-        SWP_NOZORDER | SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOCOPYBITS | SWP_NOOWNERZORDER,
-    );
+    unsafe {
+        SetWindowPos(
+            handle,
+            ptr::null_mut(),
+            0,
+            0,
+            w,
+            h,
+            SWP_NOZORDER | SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOCOPYBITS | SWP_NOOWNERZORDER,
+        )
+    };
 }
 
-pub unsafe fn get_window_size(handle: HWND) -> (u32, u32) {
+pub fn get_window_size(handle: HWND) -> (u32, u32) {
     get_window_size_impl(handle, false)
 }
 
 #[allow(unused)]
-pub unsafe fn get_window_physical_size(handle: HWND) -> (u32, u32) {
+pub fn get_window_physical_size(handle: HWND) -> (u32, u32) {
     get_window_size_impl(handle, true)
 }
 
-unsafe fn get_window_size_impl(handle: HWND, return_physical: bool) -> (u32, u32) {
+fn get_window_size_impl(handle: HWND, return_physical: bool) -> (u32, u32) {
     use winapi::shared::windef::RECT;
     use winapi::um::winuser::GetClientRect;
 
-    let mut r: RECT = mem::zeroed();
-    GetClientRect(handle, &mut r);
+    let mut r: RECT = unsafe { mem::zeroed() };
+    unsafe { GetClientRect(handle, &mut r) };
 
     let (w, h) = if return_physical {
         (r.right, r.bottom)
@@ -408,27 +415,27 @@ unsafe fn get_window_size_impl(handle: HWND, return_physical: bool) -> (u32, u32
     (w as u32, h as u32)
 }
 
-pub unsafe fn set_window_visibility(handle: HWND, visible: bool) {
+pub fn set_window_visibility(handle: HWND, visible: bool) {
     use winapi::um::winuser::ShowWindow;
     use winapi::um::winuser::{SW_HIDE, SW_SHOW};
 
     let visible = if visible { SW_SHOW } else { SW_HIDE };
-    ShowWindow(handle, visible);
+    unsafe { ShowWindow(handle, visible) };
 }
 
-pub unsafe fn get_window_visibility(handle: HWND) -> bool {
+pub fn get_window_visibility(handle: HWND) -> bool {
     use winapi::um::winuser::IsWindowVisible;
-    IsWindowVisible(handle) != 0
+    unsafe { IsWindowVisible(handle) != 0 }
 }
 
-pub unsafe fn get_window_enabled(handle: HWND) -> bool {
+pub fn get_window_enabled(handle: HWND) -> bool {
     use winapi::um::winuser::{GWL_STYLE, WS_DISABLED};
 
     let style = get_window_long(handle, GWL_STYLE) as UINT;
     (style & WS_DISABLED) != WS_DISABLED
 }
 
-pub unsafe fn set_window_enabled(handle: HWND, enabled: bool) {
+pub fn set_window_enabled(handle: HWND, enabled: bool) {
     use winapi::um::winuser::{GWL_STYLE, WS_DISABLED};
     use winapi::um::winuser::{InvalidateRect, UpdateWindow};
 
@@ -440,21 +447,23 @@ pub unsafe fn set_window_enabled(handle: HWND, enabled: bool) {
     }
 
     // Tell the control to redraw itself to show the new style.
-    InvalidateRect(handle, ptr::null(), 1);
-    UpdateWindow(handle);
+    unsafe {
+        InvalidateRect(handle, ptr::null(), 1);
+        UpdateWindow(handle);
+    }
 }
 
 #[cfg(feature = "tabs")]
-pub unsafe fn get_window_class_name(handle: HWND) -> String {
+pub fn get_window_class_name(handle: HWND) -> String {
     use std::ffi::OsString;
     use std::os::windows::ffi::OsStringExt;
     use winapi::shared::ntdef::WCHAR;
     use winapi::um::winuser::GetClassNameW;
 
     let mut class_name_raw: Vec<WCHAR> = Vec::with_capacity(100);
-    class_name_raw.set_len(100);
+    unsafe { class_name_raw.set_len(100) };
 
-    let count = GetClassNameW(handle, class_name_raw.as_mut_ptr(), 100) as usize;
+    let count = unsafe { GetClassNameW(handle, class_name_raw.as_mut_ptr(), 100) as usize };
 
     OsString::from_wide(&class_name_raw[..count])
         .into_string()

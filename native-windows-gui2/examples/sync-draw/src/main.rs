@@ -248,7 +248,7 @@ impl SyncDraw {
     }
 }
 
-const ERR: &'static str = "Failed to initialize the SyncDraw";
+const ERR: &str = "Failed to initialize the SyncDraw";
 
 /// Initialization that must be done after the Ui was created
 /// This is only done if the instance of syncdraw is the first one created

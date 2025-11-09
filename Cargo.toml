@@ -4,7 +4,6 @@ resolver = "3"
 members = [
     "native-windows-gui2",
     "native-windows-derive2",
-    "native-windows-canvas2",
     "native-windows-gui2/examples/opengl_canvas",
     "native-windows-gui2/examples/embed_resources",
     "native-windows-gui2/examples/sync-draw",

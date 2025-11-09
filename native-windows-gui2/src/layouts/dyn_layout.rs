@@ -82,10 +82,10 @@ impl DynLayout {
             .into()
             .hwnd()
             .expect("Child must be a window-like control (HWND handle)");
-        let pos = unsafe { wh::get_window_position(hwnd) };
-        let size = unsafe { wh::get_window_size(hwnd) };
+        let pos = wh::get_window_position(hwnd) ;
+        let size = wh::get_window_size(hwnd) ;
 
-        let (whost, hhost) = unsafe { wh::get_window_size(self.inner.borrow_mut().base) };
+        let (whost, hhost) = wh::get_window_size(self.inner.borrow_mut().base) ;
 
         let xdelta = 0.01 * whost as f32;
         let ydelta = 0.01 * hhost as f32;
@@ -141,7 +141,7 @@ impl DynLayout {
             inner.base
         };
 
-        let (w, h) = unsafe { wh::get_window_size(base) };
+        let (w, h) = wh::get_window_size(base) ;
         self.update_layout(w as u32, h as u32);
     }
 
@@ -181,7 +181,7 @@ impl DynLayout {
             inner.base
         };
 
-        let (w, h) = unsafe { wh::get_window_size(base) };
+        let (w, h) = wh::get_window_size(base) ;
         self.update_layout(w as u32, h as u32);
     }
 
@@ -231,7 +231,7 @@ impl DynLayout {
             panic!("Layout is not bound to a parent control.")
         }
 
-        let (w, h) = unsafe { wh::get_window_size(inner.base) };
+        let (w, h) =  wh::get_window_size(inner.base) ;
         self.update_layout(w, h);
     }
 
@@ -330,8 +330,8 @@ impl DynLayoutBuilder {
         c: W,
     ) -> DynLayoutBuilder {
         let hwnd = c.into().hwnd().expect("Child must be HWND");
-        let pos = unsafe { wh::get_window_position(hwnd) };
-        let size = unsafe { wh::get_window_size(hwnd) };
+        let pos =  wh::get_window_position(hwnd) ;
+        let size =  wh::get_window_size(hwnd);
 
         self.layout.children.push(DynLayoutItem {
             control: hwnd,
@@ -361,7 +361,7 @@ impl DynLayoutBuilder {
             return Err(NwgError::layout_create("DynLayout does not have a parent."));
         }
 
-        let (w, h) = unsafe { wh::get_window_size(self.layout.base) };
+        let (w, h) = wh::get_window_size(self.layout.base) ;
         let base_handle = ControlHandle::Hwnd(self.layout.base);
 
         // Saves the new layout. TODO: should free the old one too (if any)
@@ -380,7 +380,7 @@ impl DynLayoutBuilder {
                 let size = l as u32;
                 let width = LOWORD(size) as i32;
                 let height = HIWORD(size) as i32;
-                let (w, h) = unsafe { crate::win32::high_dpi::physical_to_logical(width, height) };
+                let (w, h) = crate::win32::high_dpi::physical_to_logical(width, height) ;
                 DynLayout::update_layout(&event_layout, w as u32, h as u32);
             }
             None

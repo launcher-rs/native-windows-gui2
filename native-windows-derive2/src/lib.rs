@@ -274,7 +274,7 @@ pub fn derive_ui(input: pm::TokenStream) -> pm::TokenStream {
     let generics = quote! { #lt #generic_params #gt }; // <'a: 'b, T: Trait1, const C>
     let generic_names = quote! { #lt #generic_names #gt }; // <'a, T, C>
 
-    let ui = NwgUi::build(&ui_data, false);
+    let ui = NwgUi::build(ui_data, false);
     let controls = ui.controls();
     let resources = ui.resources();
     let partials = ui.partials();
@@ -286,7 +286,7 @@ pub fn derive_ui(input: pm::TokenStream) -> pm::TokenStream {
     // Returns an error in the examples, so we try a default value
     let nwg = match nwg_name {
         Ok(name) => syn::Ident::new(&name, proc_macro2::Span::call_site()),
-        Err(_) => syn::Ident::new("native_windows_gui", proc_macro2::Span::call_site()),
+        Err(_) => syn::Ident::new("native_windows_gui2", proc_macro2::Span::call_site()),
     };
 
     let derive_ui = quote! {
@@ -411,7 +411,7 @@ pub fn derive_partial(input: pm::TokenStream) -> pm::TokenStream {
     let generic_names = quote! { #lt #generic_names #gt }; // <'a, T, C>
 
     let ui_data = parse_ui_data(&base).expect("NWG derive can only be implemented on structs");
-    let ui = NwgUi::build(&ui_data, true);
+    let ui = NwgUi::build(ui_data, true);
     let controls = ui.controls();
     let resources = ui.resources();
     let partials = ui.partials();
@@ -423,7 +423,7 @@ pub fn derive_partial(input: pm::TokenStream) -> pm::TokenStream {
     // Returns an error in the examples, so we try a default value
     let nwg = match nwg_name {
         Ok(name) => syn::Ident::new(&name, proc_macro2::Span::call_site()),
-        Err(_) => syn::Ident::new("native_windows_gui", proc_macro2::Span::call_site()),
+        Err(_) => syn::Ident::new("native_windows_gui2", proc_macro2::Span::call_site()),
     };
 
     let partial_ui = quote! {

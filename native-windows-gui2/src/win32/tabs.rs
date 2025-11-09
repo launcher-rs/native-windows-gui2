@@ -20,20 +20,18 @@ pub fn create_tab_classes() -> Result<(), NwgError> {
         return Err(NwgError::initialization("GetModuleHandleW failed"));
     }
 
-    unsafe {
-        build_sysclass(
-            hmod,
-            TAB_CLASS_ID,
-            Some(tab_proc),
-            Some(COLOR_BTNFACE as HBRUSH),
-            None,
-        )?;
-    }
+    build_sysclass(
+        hmod,
+        TAB_CLASS_ID,
+        Some(tab_proc),
+        Some(COLOR_BTNFACE as HBRUSH),
+        None,
+    )?;
 
     Ok(())
 }
 
-unsafe extern "system" fn tab_proc(hwnd: HWND, msg: UINT, w: WPARAM, l: LPARAM) -> LRESULT {
+extern "system" fn tab_proc(hwnd: HWND, msg: UINT, w: WPARAM, l: LPARAM) -> LRESULT {
     use winapi::um::winuser::DefWindowProcW;
     use winapi::um::winuser::WM_CREATE;
 
@@ -45,6 +43,6 @@ unsafe extern "system" fn tab_proc(hwnd: HWND, msg: UINT, w: WPARAM, l: LPARAM) 
     if let Some(result) = handled {
         result
     } else {
-        DefWindowProcW(hwnd, msg, w, l)
+        unsafe { DefWindowProcW(hwnd, msg, w, l) }
     }
 }
