@@ -2,8 +2,8 @@
 name = "wgpu_canvas"
 description = "A gltf model loader using native-windows-gui and wgpu-rs"
 version = "0.1.0"
-authors = ["Gabriel D <gdube.475@gmail.com>"]
 edition = "2024"
+publish = false
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

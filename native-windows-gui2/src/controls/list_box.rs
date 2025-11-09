@@ -391,41 +391,39 @@ impl<D: Display + Default> ListBox<D> {
     pub fn set_font(&self, font: Option<&Font>) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
 
-            wh::set_window_font(handle, font.map(|f| f.handle), true);
-
+        wh::set_window_font(handle, font.map(|f| f.handle), true);
     }
 
     /// Return true if the control currently has the keyboard focus
     pub fn focus(&self) -> bool {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::get_focus(handle)
+        wh::get_focus(handle)
     }
 
     /// Set the keyboard focus on the button.
     pub fn set_focus(&self) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
 
-            wh::set_focus(handle);
-
+        wh::set_focus(handle);
     }
 
     /// Return true if the control user can interact with the control, return false otherwise
     pub fn enabled(&self) -> bool {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-       wh::get_window_enabled(handle)
+        wh::get_window_enabled(handle)
     }
 
     /// Enable or disable the control
     pub fn set_enabled(&self, v: bool) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::set_window_enabled(handle, v)
+        wh::set_window_enabled(handle, v)
     }
 
     /// Return true if the control is visible to the user. Will return true even if the
     /// control is outside of the parent client view (ex: at the position (10000, 10000))
     pub fn visible(&self) -> bool {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::get_window_visibility(handle)
+        wh::get_window_visibility(handle)
     }
 
     /// Show or hide the control to the user
@@ -437,19 +435,19 @@ impl<D: Display + Default> ListBox<D> {
     /// Return the size of the button in the parent window
     pub fn size(&self) -> (u32, u32) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::get_window_size(handle)
+        wh::get_window_size(handle)
     }
 
     /// Set the size of the button in the parent window
     pub fn set_size(&self, x: u32, y: u32) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::set_window_size(handle, x, y, false)
+        wh::set_window_size(handle, x, y, false)
     }
 
     /// Return the position of the button in the parent window
     pub fn position(&self) -> (i32, i32) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-       wh::get_window_position(handle)
+        wh::get_window_position(handle)
     }
 
     /// Set the position of the button in the parent window
@@ -461,14 +459,14 @@ impl<D: Display + Default> ListBox<D> {
     /// Get read-only access to the inner collection of the list box
     /// This call refcell.borrow under the hood. Be sure to drop the value before
     /// calling other list box methods
-    pub fn collection(&self) -> Ref<'_,Vec<D>> {
+    pub fn collection(&self) -> Ref<'_, Vec<D>> {
         self.collection.borrow()
     }
 
     /// Get mutable access to the inner collection of the list box. Does not update the visual
     /// control. Call `sync` to update the view. This call refcell.borrow_mut under the hood.
     /// Be sure to drop the value before calling other list box methods
-    pub fn collection_mut(&self) -> RefMut<'_,Vec<D>> {
+    pub fn collection_mut(&self) -> RefMut<'_, Vec<D>> {
         self.collection.borrow_mut()
     }
 

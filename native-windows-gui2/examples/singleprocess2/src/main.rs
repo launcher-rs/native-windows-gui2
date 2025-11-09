@@ -13,7 +13,7 @@ use winapi::shared::minwindef::{BOOL, FALSE, LPARAM, TRUE};
 use winapi::shared::ntdef::HANDLE;
 use winapi::shared::windef::HWND;
 use winapi::um::winuser::{
-    EnumWindows, GetPropW, IsWindow, SetForegroundWindow, SetPropW, ShowWindow, SW_NORMAL,
+    EnumWindows, GetPropW, IsWindow, SW_NORMAL, SetForegroundWindow, SetPropW, ShowWindow,
 };
 
 #[no_mangle]

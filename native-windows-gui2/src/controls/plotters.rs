@@ -91,14 +91,13 @@ impl Plotters {
     pub fn set_focus(&self) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
 
-            wh::set_focus(handle);
-
+        wh::set_focus(handle);
     }
 
     /// Return true if the control user can interact with the control, return false otherwise
     pub fn enabled(&self) -> bool {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::get_window_enabled(handle)
+        wh::get_window_enabled(handle)
     }
 
     /// Enable or disable the control
@@ -117,19 +116,19 @@ impl Plotters {
     /// Show or hide the control to the user
     pub fn set_visible(&self, v: bool) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::set_window_visibility(handle, v)
+        wh::set_window_visibility(handle, v)
     }
 
     /// Return the size of the button in the parent window
     pub fn size(&self) -> (u32, u32) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::get_window_size(handle)
+        wh::get_window_size(handle)
     }
 
     /// Return the physical size of canvas in pixels considering the dpi scale
     pub fn physical_size(&self) -> (u32, u32) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::get_window_physical_size(handle)
+        wh::get_window_physical_size(handle)
     }
 
     /// Set the size of the button in the parent window
@@ -141,13 +140,13 @@ impl Plotters {
     /// Return the position of the button in the parent window
     pub fn position(&self) -> (i32, i32) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::get_window_position(handle)
+        wh::get_window_position(handle)
     }
 
     /// Set the position of the button in the parent window
     pub fn set_position(&self, x: i32, y: i32) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::set_window_position(handle, x, y)
+        wh::set_window_position(handle, x, y)
     }
 
     /// Winapi class name used during control creation

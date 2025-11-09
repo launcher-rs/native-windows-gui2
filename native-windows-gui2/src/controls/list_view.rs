@@ -980,27 +980,26 @@ impl ListView {
     /// Returns true if the control currently has the keyboard focus
     pub fn focus(&self) -> bool {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::get_focus(handle)
+        wh::get_focus(handle)
     }
 
     /// Sets the keyboard focus on the button
     pub fn set_focus(&self) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
 
-            wh::set_focus(handle);
-
+        wh::set_focus(handle);
     }
 
     /// Returns true if the control user can interact with the control, return false otherwise
     pub fn enabled(&self) -> bool {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::get_window_enabled(handle)
+        wh::get_window_enabled(handle)
     }
 
     /// Enable or disable the control
     pub fn set_enabled(&self, v: bool) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::set_window_enabled(handle, v)
+        wh::set_window_enabled(handle, v)
     }
 
     /// Returns true if the control is visible to the user. Will return true even if the
@@ -1013,19 +1012,19 @@ impl ListView {
     /// Show or hide the control to the user
     pub fn set_visible(&self, v: bool) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::set_window_visibility(handle, v)
+        wh::set_window_visibility(handle, v)
     }
 
     /// Returns the size of the button in the parent window
     pub fn size(&self) -> (u32, u32) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::get_window_size(handle)
+        wh::get_window_size(handle)
     }
 
     /// Sets the size of the button in the parent window
     pub fn set_size(&self, x: u32, y: u32) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::set_window_size(handle, x, y, true)
+        wh::set_window_size(handle, x, y, true)
     }
 
     /// Returns the position of the button in the parent window

@@ -3,6 +3,7 @@ name = "opengl-canvas"
 version = "1.0.0"
 authors = ["launcher-rs"]
 edition = "2024"
+publish = false
 
 [dependencies]
 native-windows-gui2 = {path = "../../", features = ["extern-canvas", "color-dialog"]}

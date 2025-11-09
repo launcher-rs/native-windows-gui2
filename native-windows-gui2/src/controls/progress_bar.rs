@@ -237,15 +237,14 @@ impl ProgressBar {
     /// Return true if the control currently has the keyboard focus
     pub fn focus(&self) -> bool {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::get_focus(handle)
+        wh::get_focus(handle)
     }
 
     /// Set the keyboard focus on the button.
     pub fn set_focus(&self) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
 
-            wh::set_focus(handle);
-
+        wh::set_focus(handle);
     }
 
     /// Return true if the control user can interact with the control, return false otherwise
@@ -257,7 +256,7 @@ impl ProgressBar {
     /// Enable or disable the control
     pub fn set_enabled(&self, v: bool) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::set_window_enabled(handle, v)
+        wh::set_window_enabled(handle, v)
     }
 
     /// Return true if the control is visible to the user. Will return true even if the
@@ -270,7 +269,7 @@ impl ProgressBar {
     /// Show or hide the control to the user
     pub fn set_visible(&self, v: bool) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::set_window_visibility(handle, v)
+        wh::set_window_visibility(handle, v)
     }
 
     /// Return the size of the button in the parent window
@@ -282,7 +281,7 @@ impl ProgressBar {
     /// Set the size of the button in the parent window
     pub fn set_size(&self, x: u32, y: u32) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::set_window_size(handle, x, y, false)
+        wh::set_window_size(handle, x, y, false)
     }
 
     /// Return the position of the button in the parent window
@@ -294,7 +293,7 @@ impl ProgressBar {
     /// Set the position of the button in the parent window
     pub fn set_position(&self, x: i32, y: i32) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::set_window_position(handle, x, y)
+        wh::set_window_position(handle, x, y)
     }
 
     /// Winapi class name used during control creation

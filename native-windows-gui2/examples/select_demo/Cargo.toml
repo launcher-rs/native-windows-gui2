@@ -1,7 +1,8 @@
 [package]
 name = "select_demo"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
+publish = false
 
 [dependencies]
 native-windows-derive2 = {path = "../../../native-windows-derive2"}

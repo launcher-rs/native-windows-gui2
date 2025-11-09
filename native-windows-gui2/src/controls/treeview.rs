@@ -717,8 +717,7 @@ impl TreeView {
     pub fn set_font(&self, font: Option<&Font>) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
 
-            wh::set_window_font(handle, font.map(|f| f.handle), true);
-
+        wh::set_window_font(handle, font.map(|f| f.handle), true);
     }
 
     /// Return true if the control currently has the keyboard focus
@@ -731,33 +730,32 @@ impl TreeView {
     pub fn set_focus(&self) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
 
-            wh::set_focus(handle);
-
+        wh::set_focus(handle);
     }
 
     /// Return true if the control user can interact with the control, return false otherwise
     pub fn enabled(&self) -> bool {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-       wh::get_window_enabled(handle)
+        wh::get_window_enabled(handle)
     }
 
     /// Enable or disable the control
     pub fn set_enabled(&self, v: bool) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::set_window_enabled(handle, v)
+        wh::set_window_enabled(handle, v)
     }
 
     /// Return true if the control is visible to the user. Will return true even if the
     /// control is outside of the parent client view (ex: at the position (10000, 10000))
     pub fn visible(&self) -> bool {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::get_window_visibility(handle)
+        wh::get_window_visibility(handle)
     }
 
     /// Show or hide the control to the user
     pub fn set_visible(&self, v: bool) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::set_window_visibility(handle, v)
+        wh::set_window_visibility(handle, v)
     }
 
     /// Return the size of the button in the parent window
@@ -781,7 +779,7 @@ impl TreeView {
     /// Set the position of the button in the parent window
     pub fn set_position(&self, x: i32, y: i32) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::set_window_position(handle, x, y)
+        wh::set_window_position(handle, x, y)
     }
 
     /// Winapi class name used during control creation

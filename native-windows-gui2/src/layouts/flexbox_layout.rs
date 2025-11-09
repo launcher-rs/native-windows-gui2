@@ -248,7 +248,7 @@ impl FlexboxLayout {
         if let Some(parent_layout) = &inner.parent_layout {
             parent_layout.fit()
         } else {
-            let (w, h) =  wh::get_window_size(inner.base) ;
+            let (w, h) = wh::get_window_size(inner.base);
             self.update_layout(w, h, (0, 0))
         }
     }
@@ -345,7 +345,7 @@ impl FlexboxLayout {
             let Size { width, height } = layout.size;
 
             match child {
-                Child::Item(child) =>  {
+                Child::Item(child) => {
                     wh::set_window_position(
                         child.control,
                         x as i32 + offset.0,
@@ -354,7 +354,7 @@ impl FlexboxLayout {
                     wh::set_window_size(child.control, width as u32, height as u32, false);
                     wh::set_window_after(child.control, *last_handle);
                     last_handle.replace(child.control);
-                },
+                }
                 Child::Flexbox(child) => {
                     let children_nodes = stretch.children(node)?;
                     FlexboxLayout::apply_layout_immediate(
@@ -640,7 +640,7 @@ impl FlexboxLayoutBuilder {
             ));
         }
 
-        let (w, h) = wh::get_window_size(self.layout.base) ;
+        let (w, h) = wh::get_window_size(self.layout.base);
         let base_handle = ControlHandle::Hwnd(self.layout.base);
 
         // Auto compute size if enabled
@@ -721,7 +721,7 @@ impl FlexboxLayoutBuilder {
                 let size = l as u32;
                 let width = LOWORD(size) as i32;
                 let height = HIWORD(size) as i32;
-                let (w, h) =  crate::win32::high_dpi::physical_to_logical(width, height) ;
+                let (w, h) = crate::win32::high_dpi::physical_to_logical(width, height);
                 FlexboxLayout::update_layout(&event_layout, w as u32, h as u32, (0, 0))
                     .expect("Failed to compute layout!");
             }

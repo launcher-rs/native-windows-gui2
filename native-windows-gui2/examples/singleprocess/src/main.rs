@@ -10,7 +10,7 @@ use nwd::NwgUi;
 use nwg::NativeUi;
 use std::ptr;
 use winapi::shared::minwindef::BOOL;
-use winapi::um::winuser::{FindWindowW, IsWindow, SetForegroundWindow, ShowWindow, SW_NORMAL};
+use winapi::um::winuser::{FindWindowW, IsWindow, SW_NORMAL, SetForegroundWindow, ShowWindow};
 
 #[derive(Default, NwgUi)]
 pub struct BasicApp {

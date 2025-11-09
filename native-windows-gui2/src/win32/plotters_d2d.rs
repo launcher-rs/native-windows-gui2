@@ -319,7 +319,7 @@ impl PlottersBackend {
         Ok(())
     }
 
-    fn target(&self) -> Ref<'_,Target> {
+    fn target(&self) -> Ref<'_, Target> {
         self.target.borrow()
     }
 
@@ -365,7 +365,7 @@ impl PlottersBackend {
         *text_format
     }
 
-    fn target_mut(&self) -> RefMut<'_,Target> {
+    fn target_mut(&self) -> RefMut<'_, Target> {
         self.target.borrow_mut()
     }
 }

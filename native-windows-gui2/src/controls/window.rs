@@ -182,20 +182,19 @@ impl Window {
     pub fn set_focus(&self) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
 
-            wh::set_focus(handle);
-
+        wh::set_focus(handle);
     }
 
     /// Return true if the control user can interact with the control, return false otherwise
     pub fn enabled(&self) -> bool {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::get_window_enabled(handle)
+        wh::get_window_enabled(handle)
     }
 
     /// Enable or disable the control
     pub fn set_enabled(&self, v: bool) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::set_window_enabled(handle, v)
+        wh::set_window_enabled(handle, v)
     }
 
     /// Return true if the control is visible to the user. Will return true even if the
@@ -214,31 +213,31 @@ impl Window {
     /// Return the size of the button in the parent window
     pub fn size(&self) -> (u32, u32) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::get_window_size(handle)
+        wh::get_window_size(handle)
     }
 
     /// Set the size of the button in the parent window
     pub fn set_size(&self, x: u32, y: u32) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::set_window_size(handle, x, y, true)
+        wh::set_window_size(handle, x, y, true)
     }
 
     /// Return the position of the button in the parent window
     pub fn position(&self) -> (i32, i32) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::get_window_position(handle)
+        wh::get_window_position(handle)
     }
 
     /// Set the position of the button in the parent window
     pub fn set_position(&self, x: i32, y: i32) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::set_window_position(handle, x, y)
+        wh::set_window_position(handle, x, y)
     }
 
     /// Return window title
     pub fn text(&self) -> String {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::get_window_text(handle)
+        wh::get_window_text(handle)
     }
 
     /// Set the window title
@@ -401,7 +400,7 @@ impl<'a> WindowBuilder<'a> {
         if self.center {
             let [left, top, right, bottom] =
                 crate::Monitor::monitor_rect_from_window(out as &Window);
-            let (m_width, m_height) =  physical_to_logical(right - left, bottom - top) ;
+            let (m_width, m_height) = physical_to_logical(right - left, bottom - top);
             let (width, height) = self.size;
 
             let x = left + ((m_width - width) / 2);

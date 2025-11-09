@@ -119,8 +119,7 @@ impl TextBox {
         }
         let handle = self.handle.hwnd().expect(BAD_HANDLE);
 
-            wh::set_window_font(handle, font.map(|f| f.handle), true);
-
+        wh::set_window_font(handle, font.map(|f| f.handle), true);
     }
 
     /// Return the number of maximum character allowed in this text input
@@ -299,8 +298,7 @@ impl TextBox {
         }
         let handle = self.handle.hwnd().expect(BAD_HANDLE);
 
-            wh::set_focus(handle);
-
+        wh::set_focus(handle);
     }
 
     /// Return true if the control user can interact with the control, return false otherwise
@@ -309,7 +307,7 @@ impl TextBox {
             panic!("{}", NOT_BOUND);
         }
         let handle = self.handle.hwnd().expect(BAD_HANDLE);
-         wh::get_window_enabled(handle)
+        wh::get_window_enabled(handle)
     }
 
     /// Enable or disable the control
@@ -318,7 +316,7 @@ impl TextBox {
             panic!("{}", NOT_BOUND);
         }
         let handle = self.handle.hwnd().expect(BAD_HANDLE);
-         wh::set_window_enabled(handle, v)
+        wh::set_window_enabled(handle, v)
     }
 
     /// Return true if the control is visible to the user. Will return true even if the
@@ -328,7 +326,7 @@ impl TextBox {
             panic!("{}", NOT_BOUND);
         }
         let handle = self.handle.hwnd().expect(BAD_HANDLE);
-         wh::get_window_visibility(handle)
+        wh::get_window_visibility(handle)
     }
 
     /// Show or hide the control to the user
@@ -337,7 +335,7 @@ impl TextBox {
             panic!("{}", NOT_BOUND);
         }
         let handle = self.handle.hwnd().expect(BAD_HANDLE);
-         wh::set_window_visibility(handle, v)
+        wh::set_window_visibility(handle, v)
     }
 
     /// Return the size of the button in the parent window
@@ -346,7 +344,7 @@ impl TextBox {
             panic!("{}", NOT_BOUND);
         }
         let handle = self.handle.hwnd().expect(BAD_HANDLE);
-         wh::get_window_size(handle)
+        wh::get_window_size(handle)
     }
 
     /// Set the size of the button in the parent window
@@ -364,7 +362,7 @@ impl TextBox {
             panic!("{}", NOT_BOUND);
         }
         let handle = self.handle.hwnd().expect(BAD_HANDLE);
-         wh::get_window_position(handle)
+        wh::get_window_position(handle)
     }
 
     /// Set the position of the button in the parent window
@@ -373,7 +371,7 @@ impl TextBox {
             panic!("{}", NOT_BOUND);
         }
         let handle = self.handle.hwnd().expect(BAD_HANDLE);
-         wh::set_window_position(handle, x, y)
+        wh::set_window_position(handle, x, y)
     }
 
     /// Return the text displayed in the TextInput
@@ -382,7 +380,7 @@ impl TextBox {
             panic!("{}", NOT_BOUND);
         }
         let handle = self.handle.hwnd().expect(BAD_HANDLE);
-         wh::get_window_text(handle)
+        wh::get_window_text(handle)
     }
 
     /// Set the text displayed in the TextInput
@@ -391,7 +389,7 @@ impl TextBox {
             panic!("{}", NOT_BOUND);
         }
         let handle = self.handle.hwnd().expect(BAD_HANDLE);
-         wh::set_window_text(handle, v)
+        wh::set_window_text(handle, v)
     }
 
     /// Set the text in the current control, converting unix-style newlines in the input to "\r\n"
@@ -400,7 +398,7 @@ impl TextBox {
             panic!("{}", NOT_BOUND);
         }
         let handle = self.handle.hwnd().expect(BAD_HANDLE);
-         wh::set_window_text(handle, &unix2dos(&v).to_string())
+        wh::set_window_text(handle, &unix2dos(&v).to_string())
     }
 
     /// Append text to the current control

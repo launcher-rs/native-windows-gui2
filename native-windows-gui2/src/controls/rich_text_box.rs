@@ -317,8 +317,7 @@ impl RichTextBox {
     pub fn set_font(&self, font: Option<&Font>) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
 
-            wh::set_window_font(handle, font.map(|f| f.handle), true);
-
+        wh::set_window_font(handle, font.map(|f| f.handle), true);
     }
 
     /// Return the number of maximum character allowed in this text input
@@ -452,27 +451,26 @@ impl RichTextBox {
     pub fn set_focus(&self) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
 
-            wh::set_focus(handle);
-
+        wh::set_focus(handle);
     }
 
     /// Return true if the control user can interact with the control, return false otherwise
     pub fn enabled(&self) -> bool {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::get_window_enabled(handle)
+        wh::get_window_enabled(handle)
     }
 
     /// Enable or disable the control
     pub fn set_enabled(&self, v: bool) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::set_window_enabled(handle, v)
+        wh::set_window_enabled(handle, v)
     }
 
     /// Return true if the control is visible to the user. Will return true even if the
     /// control is outside of the parent client view (ex: at the position (10000, 10000))
     pub fn visible(&self) -> bool {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::get_window_visibility(handle)
+        wh::get_window_visibility(handle)
     }
 
     /// Show or hide the control to the user
@@ -502,19 +500,19 @@ impl RichTextBox {
     /// Set the position of the button in the parent window
     pub fn set_position(&self, x: i32, y: i32) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::set_window_position(handle, x, y)
+        wh::set_window_position(handle, x, y)
     }
 
     /// Return the text displayed in the TextInput
     pub fn text(&self) -> String {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::get_window_text(handle)
+        wh::get_window_text(handle)
     }
 
     /// Set the text displayed in the TextInput
     pub fn set_text<'a>(&self, v: &'a str) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::set_window_text(handle, v)
+        wh::set_window_text(handle, v)
     }
 
     /// Set the text in the current control, converting unix-style newlines in the input to "\r\n"

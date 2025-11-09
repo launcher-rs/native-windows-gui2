@@ -78,8 +78,7 @@ impl StatusBar {
     pub fn set_font(&self, font: Option<&Font>) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
 
-            wh::set_window_font(handle, font.map(|f| f.handle), true);
-
+        wh::set_window_font(handle, font.map(|f| f.handle), true);
     }
 
     /// Return the text in one of the region of the status bar

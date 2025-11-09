@@ -157,7 +157,7 @@ where
         );
         EnumChildWindows(hwnd, Some(set_children_subclass), params_ptr as LPARAM);
         SetWindowSubclass(hwnd, callback_fn, subclass_id, callback_ptr as UINT_PTR);
-        let _= Box::from_raw(params_ptr);
+        let _ = Box::from_raw(params_ptr);
     }
 
     handler
@@ -394,7 +394,6 @@ pub fn unbind_raw_event_handler(handler: &RawEventHandler) -> Result<(), NwgErro
 }
 
 unsafe fn is_dark_mode_active() -> bool {
-
     // type FnIsDarkModeAllowedForWindow = extern "system" fn(hwnd: HWND) -> bool;
     type FnShouldAppsUseDarkMode = extern "system" fn() -> bool;
     // type FnIsHighContrast = extern "system" fn() -> bool;

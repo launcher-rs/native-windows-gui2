@@ -147,15 +147,14 @@ impl ExternCanvas {
     /// Return true if the control currently has the keyboard focus
     pub fn focus(&self) -> bool {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::get_focus(handle)
+        wh::get_focus(handle)
     }
 
     /// Set the keyboard focus on the button
     pub fn set_focus(&self) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
 
-            wh::set_focus(handle);
-
+        wh::set_focus(handle);
     }
 
     /// Return true if the control user can interact with the control, return false otherwise
@@ -180,7 +179,7 @@ impl ExternCanvas {
     /// Show or hide the control to the user
     pub fn set_visible(&self, v: bool) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::set_window_visibility(handle, v)
+        wh::set_window_visibility(handle, v)
     }
 
     /// Return the size of the button in the parent window
@@ -192,13 +191,13 @@ impl ExternCanvas {
     /// Return the physical size of canvas in pixels considering the dpi scale
     pub fn physical_size(&self) -> (u32, u32) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::get_window_physical_size(handle)
+        wh::get_window_physical_size(handle)
     }
 
     /// Set the size of the button in the parent window
     pub fn set_size(&self, x: u32, y: u32) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::set_window_size(handle, x, y, true)
+        wh::set_window_size(handle, x, y, true)
     }
 
     /// Return the position of the button in the parent window
@@ -210,7 +209,7 @@ impl ExternCanvas {
     /// Set the position of the button in the parent window
     pub fn set_position(&self, x: i32, y: i32) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::set_window_position(handle, x, y)
+        wh::set_window_position(handle, x, y)
     }
 
     /// Return window title
@@ -222,7 +221,7 @@ impl ExternCanvas {
     /// Set the window title
     pub fn set_text<'a>(&self, v: &'a str) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::set_window_text(handle, v)
+        wh::set_window_text(handle, v)
     }
 
     /// Winapi class name used during control creation

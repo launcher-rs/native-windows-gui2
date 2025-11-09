@@ -169,7 +169,7 @@ impl GridLayout {
             inner.base
         };
 
-        let (w, h) = wh::get_window_size(base) ;
+        let (w, h) = wh::get_window_size(base);
         self.update_layout(w as u32, h as u32);
     }
 
@@ -209,7 +209,7 @@ impl GridLayout {
             inner.base
         };
 
-        let (w, h) =  wh::get_window_size(base) ;
+        let (w, h) = wh::get_window_size(base);
         self.update_layout(w as u32, h as u32);
     }
 
@@ -243,7 +243,7 @@ impl GridLayout {
             inner.base
         };
 
-        let (w, h) =wh::get_window_size(base) ;
+        let (w, h) = wh::get_window_size(base);
         self.update_layout(w as u32, h as u32);
     }
 
@@ -287,7 +287,7 @@ impl GridLayout {
             inner.base
         };
 
-        let (w, h) =  wh::get_window_size(base) ;
+        let (w, h) = wh::get_window_size(base);
         self.update_layout(w as u32, h as u32);
     }
 
@@ -331,7 +331,7 @@ impl GridLayout {
             inner.base
         };
 
-        let (w, h) =  wh::get_window_size(base) ;
+        let (w, h) = wh::get_window_size(base);
         self.update_layout(w as u32, h as u32);
     }
 
@@ -381,7 +381,7 @@ impl GridLayout {
             panic!("Grid layout is not bound to a parent control.")
         }
 
-        let (w, h) =  wh::get_window_size(inner.base) ;
+        let (w, h) = wh::get_window_size(inner.base);
         self.update_layout(w, h);
     }
 
@@ -520,11 +520,9 @@ impl GridLayout {
                 .sum::<u32>()
                 + (sp2 * (item.row_span - 1));
 
-
-                wh::set_window_position(item.control, x as i32, y as i32);
-                wh::set_window_size(item.control, local_width, local_height, false);
-                wh::set_window_after(item.control, last_handle);
-
+            wh::set_window_position(item.control, x as i32, y as i32);
+            wh::set_window_size(item.control, local_width, local_height, false);
+            wh::set_window_after(item.control, last_handle);
 
             last_handle = Some(item.control);
         }
@@ -652,7 +650,7 @@ impl GridLayoutBuilder {
             }
         }
 
-        let (w, h) = wh::get_window_size(self.layout.base) ;
+        let (w, h) = wh::get_window_size(self.layout.base);
         let base_handle = ControlHandle::Hwnd(self.layout.base);
 
         // Saves the new layout. TODO: should free the old one too (if any)
@@ -671,7 +669,7 @@ impl GridLayoutBuilder {
                 let size = l as u32;
                 let width = LOWORD(size) as i32;
                 let height = HIWORD(size) as i32;
-                let (w, h) = crate::win32::high_dpi::physical_to_logical(width, height) ;
+                let (w, h) = crate::win32::high_dpi::physical_to_logical(width, height);
                 GridLayout::update_layout(&event_layout, w as u32, h as u32);
             }
             None

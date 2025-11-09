@@ -196,21 +196,20 @@ impl RichLabel {
     pub fn set_font(&self, font: Option<&Font>) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
 
-            wh::set_window_font(handle, font.map(|f| f.handle), true);
-
+        wh::set_window_font(handle, font.map(|f| f.handle), true);
     }
 
     /// Return true if the control is visible to the user. Will return true even if the
     /// control is outside of the parent client view (ex: at the position (10000, 10000))
     pub fn visible(&self) -> bool {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::get_window_visibility(handle)
+        wh::get_window_visibility(handle)
     }
 
     /// Show or hide the control to the user
     pub fn set_visible(&self, v: bool) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::set_window_visibility(handle, v)
+        wh::set_window_visibility(handle, v)
     }
 
     /// Return the size of the button in the parent window
@@ -228,25 +227,25 @@ impl RichLabel {
     /// Return the position of the button in the parent window
     pub fn position(&self) -> (i32, i32) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::get_window_position(handle)
+        wh::get_window_position(handle)
     }
 
     /// Set the position of the button in the parent window
     pub fn set_position(&self, x: i32, y: i32) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::set_window_position(handle, x, y)
+        wh::set_window_position(handle, x, y)
     }
 
     /// Return the text displayed in the TextInput
     pub fn text(&self) -> String {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-       wh::get_window_text(handle)
+        wh::get_window_text(handle)
     }
 
     /// Set the text displayed in the TextInput
     pub fn set_text<'a>(&self, v: &'a str) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::set_window_text(handle, v)
+        wh::set_window_text(handle, v)
     }
 
     /// Winapi class name used during control creation
@@ -507,9 +506,7 @@ impl<'a> RichLabelBuilder<'a> {
             }
         }
 
-
-            out.override_events();
-
+        out.override_events();
 
         Ok(())
     }

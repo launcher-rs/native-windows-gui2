@@ -187,21 +187,19 @@ impl NumberSelect {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
 
         wh::set_window_font(handle, font.map(|f| f.handle), true);
-
     }
 
     /// Returns true if the control currently has the keyboard focus
     pub fn focus(&self) -> bool {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::get_focus(handle)
+        wh::get_focus(handle)
     }
 
     /// Sets the keyboard focus on the button.
     pub fn set_focus(&self) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
 
-            wh::set_focus(handle);
-
+        wh::set_focus(handle);
     }
 
     /// Returns true if the control user can interact with the control, return false otherwise
@@ -220,13 +218,13 @@ impl NumberSelect {
     /// control is outside of the parent client view (ex: at the position (10000, 10000))
     pub fn visible(&self) -> bool {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-       wh::get_window_visibility(handle)
+        wh::get_window_visibility(handle)
     }
 
     /// Show or hide the control to the user
     pub fn set_visible(&self, v: bool) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::set_window_visibility(handle, v)
+        wh::set_window_visibility(handle, v)
     }
 
     /// Returns the size of the control in the parent window
@@ -238,13 +236,13 @@ impl NumberSelect {
     /// Sets the size of the control in the parent window
     pub fn set_size(&self, x: u32, y: u32) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::set_window_size(handle, x, y, false)
+        wh::set_window_size(handle, x, y, false)
     }
 
     /// Returns the position of the control in the parent window
     pub fn position(&self) -> (i32, i32) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::get_window_position(handle)
+        wh::get_window_position(handle)
     }
 
     /// Sets the position of the control in the parent window
@@ -574,8 +572,7 @@ impl<'a> NumberSelectBuilder<'a> {
                         let handle = text_handle.hwnd().unwrap();
                         let text = data.formatted_value();
 
-                            wh::set_window_text(handle, &text);
-
+                        wh::set_window_text(handle, &text);
                     } else if message == BN_CLICKED && handle == minus_button {
                         let mut data = handler_data.borrow_mut();
                         data.decrease();
@@ -583,8 +580,7 @@ impl<'a> NumberSelectBuilder<'a> {
                         let handle = text_handle.hwnd().unwrap();
                         let text = data.formatted_value();
 
-                            wh::set_window_text(handle, &text);
-
+                        wh::set_window_text(handle, &text);
                     }
                 }
 

@@ -133,15 +133,14 @@ impl ScrollBar {
     /// Returns true if the control currently has the keyboard focus
     pub fn focus(&self) -> bool {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::get_focus(handle)
+        wh::get_focus(handle)
     }
 
     /// Sets the keyboard focus on the button.
     pub fn set_focus(&self) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
 
-            wh::set_focus(handle);
-
+        wh::set_focus(handle);
     }
 
     /// Returns true if the control user can interact with the control, return false otherwise
@@ -160,7 +159,7 @@ impl ScrollBar {
     /// control is outside of the parent client view (ex: at the position (10000, 10000))
     pub fn visible(&self) -> bool {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::get_window_visibility(handle)
+        wh::get_window_visibility(handle)
     }
 
     /// Show or hide the control to the user
@@ -178,19 +177,19 @@ impl ScrollBar {
     /// Sets the size of the button in the parent window
     pub fn set_size(&self, x: u32, y: u32) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::set_window_size(handle, x, y, false)
+        wh::set_window_size(handle, x, y, false)
     }
 
     /// Returns the position of the button in the parent window
     pub fn position(&self) -> (i32, i32) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::get_window_position(handle)
+        wh::get_window_position(handle)
     }
 
     /// Sets the position of the button in the parent window
     pub fn set_position(&self, x: i32, y: i32) {
         let handle = check_hwnd(&self.handle, NOT_BOUND, BAD_HANDLE);
-         wh::set_window_position(handle, x, y)
+        wh::set_window_position(handle, x, y)
     }
 
     /// Winapi class name used during control creation
@@ -239,7 +238,9 @@ impl ScrollBar {
 
                         si.cbSize = mem::size_of::<SCROLLINFO>() as u32;
                         si.fMask = SIF_ALL;
-                        unsafe { GetScrollInfo(handle, SB_CTL as i32, &mut si); }
+                        unsafe {
+                            GetScrollInfo(handle, SB_CTL as i32, &mut si);
+                        }
 
                         let event = LOWORD(w as u32) as isize;
                         match event {
@@ -262,7 +263,9 @@ impl ScrollBar {
                         }
 
                         si.fMask = SIF_POS;
-                        unsafe { SetScrollInfo(handle, SB_CTL as _, &si, TRUE); }
+                        unsafe {
+                            SetScrollInfo(handle, SB_CTL as _, &si, TRUE);
+                        }
                         //return Some(0);
                     }
                     WM_VSCROLL => {
@@ -272,7 +275,9 @@ impl ScrollBar {
 
                         si.cbSize = mem::size_of::<SCROLLINFO>() as u32;
                         si.fMask = SIF_ALL;
-                        unsafe { GetScrollInfo(handle, SB_CTL as i32, &mut si); }
+                        unsafe {
+                            GetScrollInfo(handle, SB_CTL as i32, &mut si);
+                        }
 
                         let event = LOWORD(w as u32) as isize;
                         match event {
@@ -301,7 +306,9 @@ impl ScrollBar {
                         }
 
                         si.fMask = SIF_POS;
-                        unsafe { SetScrollInfo(handle, SB_CTL as _, &si, TRUE); }
+                        unsafe {
+                            SetScrollInfo(handle, SB_CTL as _, &si, TRUE);
+                        }
                         //return Some(0);
                     }
                     _ => {}
@@ -456,8 +463,7 @@ impl ScrollBarBuilder {
             out.set_focus();
         }
 
-            out.hook_scrollbar_controls();
-
+        out.hook_scrollbar_controls();
 
         Ok(())
     }
